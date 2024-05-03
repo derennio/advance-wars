@@ -6,7 +6,8 @@ import de.dhbw.advancewars.maps.data.MapDTO;
 import de.dhbw.advancewars.maps.data.TileType;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -34,7 +35,15 @@ public class AdvanceWars extends Application {
                 Pane tile = new Pane();
                 tile.setPrefSize(TILE_SIZE, TILE_SIZE);
                 tile.relocate(x * TILE_SIZE, y * TILE_SIZE);
-                tile.setStyle("-fx-background-color: " + getTileColor(tileType));
+
+                BackgroundImage backgroundImage = new BackgroundImage(
+                        new Image(getClass().getResource(getImage(tileType)).toString(), TILE_SIZE, TILE_SIZE, false, true),
+                        BackgroundRepeat.REPEAT,
+                        BackgroundRepeat.NO_REPEAT,
+                        BackgroundPosition.DEFAULT,
+                        BackgroundSize.DEFAULT);
+
+                tile.setBackground(new Background(backgroundImage));
                 root.getChildren().add(tile);
             }
         }
@@ -44,18 +53,18 @@ public class AdvanceWars extends Application {
         stage.show();
     }
 
-    public String getTileColor(TileType tileType) {
+    public String getImage(TileType tileType) {
         switch (tileType) {
             case PLAIN:
-                return "#7aad55";
+                return "/assets/img/plain.png";
             case SEA:
-                return "#4a90d9";
+                return "/assets/img/sea.png";
             case MOUNTAIN:
-                return "#a0a0a0";
+                return "/assets/img/mountain.png";
             case WOOD:
-                return "#8b4513";
+                return "/assets/img/wood.png";
             default:
-                return "#000000";
+                return "/assets/tiles/unknown.png";
         }
     }
 
