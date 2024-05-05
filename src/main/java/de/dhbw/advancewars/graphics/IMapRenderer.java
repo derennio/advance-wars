@@ -1,10 +1,10 @@
 package de.dhbw.advancewars.graphics;
 
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import de.dhbw.advancewars.event.IGameController;
+import javafx.scene.layout.Pane;
 
 import java.io.IOException;
 
 public interface IMapRenderer {
-    Scene renderMap(String mapPath) throws IOException;
+    void renderMap(String mapPath, Pane target, IGameController controller) throws IOException;
 }

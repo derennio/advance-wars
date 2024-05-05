@@ -2,8 +2,8 @@
 
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.dhbw.advancewars.GameViewController">
-   <children>
-      <Pane prefHeight="200.0" prefWidth="200.0" />
-   </children>
-</AnchorPane>
+<?import de.dhbw.advancewars.graphics.MapPane?>
+<MapPane fx:id="mapPane" xmlns="http://javafx.com/javafx/17.0.2-ea"
+         xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.dhbw.advancewars.event.GameController">
+   <Pane/>
+</MapPane>
