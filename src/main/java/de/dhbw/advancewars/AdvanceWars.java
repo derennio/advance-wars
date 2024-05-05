@@ -19,6 +19,12 @@ public class AdvanceWars extends Application {
     private static IMapService mapService;
     private static IMapRenderer mapRenderer;
 
+    /**
+     * Starts the FX app and initializes required services.
+     *
+     * @param stage The primary stage for this application.
+     * @throws IOException If an I/O error occurs.
+     */
     @Override
     public void start(Stage stage) throws IOException {
         // Initialize the game controller, map service and map renderer
@@ -66,6 +72,11 @@ public class AdvanceWars extends Application {
         return mapRenderer;
     }
 
+    /**
+     * Launches the application. Main entry point.
+     *
+     * @param args The command line arguments.
+     */
     public static void main(String[] args) {
         launch();
     }

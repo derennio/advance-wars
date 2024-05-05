@@ -3,6 +3,9 @@
 <?import javafx.scene.layout.*?>
 
 <?import de.dhbw.advancewars.graphics.MapPane?>
+
+<!-- The game view is the main view of the game. It contains the map and the game controls.
+     The map pane will display the selected map. -->
 <MapPane fx:id="mapPane" xmlns="http://javafx.com/javafx/17.0.2-ea"
          xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.dhbw.advancewars.event.GameController">
    <Pane/>
