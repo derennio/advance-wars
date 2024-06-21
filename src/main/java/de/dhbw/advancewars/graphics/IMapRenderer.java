@@ -1,6 +1,7 @@
 package de.dhbw.advancewars.graphics;
 
 import de.dhbw.advancewars.event.IGameController;
+import de.dhbw.advancewars.maps.data.MapTile;
 import javafx.scene.layout.Pane;
 
 import java.io.IOException;
@@ -21,4 +22,8 @@ public interface IMapRenderer {
      * @throws IOException If an I/O error occurs.
      */
     void renderMap(String mapPath, Pane target, IGameController controller) throws IOException;
+
+    void overlayTiles(Pane target, MapTile[] tiles);
+
+    void clearOverlay(Pane target, MapTile[] tiles);
 }

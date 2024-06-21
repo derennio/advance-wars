@@ -1,9 +1,12 @@
 package de.dhbw.advancewars.graphics;
 
+import de.dhbw.advancewars.AdvanceWars;
 import de.dhbw.advancewars.event.IGameController;
 import de.dhbw.advancewars.maps.IMapService;
 import de.dhbw.advancewars.maps.data.MapDTO;
+import de.dhbw.advancewars.maps.data.MapTile;
 import de.dhbw.advancewars.maps.data.TileType;
+import javafx.geometry.Insets;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 
@@ -33,6 +36,7 @@ public class MapRenderer implements IMapRenderer {
         MapDTO map = null;
         try {
             map = mapService.loadMap("src/main/resources/assets/maps/" + mapPath + ".pak0");
+            AdvanceWars.setMap(map);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -69,9 +73,40 @@ public class MapRenderer implements IMapRenderer {
 
                 // The tile click event is handled by the controller.
                 tile.setOnMouseClicked(event -> controller.handleTileClick(finalMap.tiles()[finalX][finalY]));
+                tile.setOnMouseEntered(event -> {
+                    controller.handleTileHover(finalMap.tiles()[finalX][finalY]);
+                    overlayTiles(target, new MapTile[]{finalMap.tiles()[finalX][finalY]});
+                });
+                tile.setOnMouseExited(event -> {
+                    controller.handleTileExit(finalMap.tiles()[finalX][finalY]);
+                    clearOverlay(target, new MapTile[]{finalMap.tiles()[finalX][finalY]});
+                });
 
                 target.getChildren().add(tile);
             }
+        }
+    }
+
+    @Override
+    public void overlayTiles(Pane target, MapTile[] tiles) {
+        for (MapTile tile : tiles) {
+            Pane overlay = new Pane();
+            overlay.setId(tile.x() + "ol" + tile.y());
+            overlay.setPrefSize(TILE_SIZE, TILE_SIZE);
+            overlay.relocate(tile.x() * TILE_SIZE, tile.y() * TILE_SIZE);
+
+            Background hoverEffect = new Background(new BackgroundFill(javafx.scene.paint.Color.rgb(0, 0, 0, 0.3), CornerRadii.EMPTY, Insets.EMPTY));
+
+            overlay.setBackground(hoverEffect);
+            target.getChildren().add(overlay);
+        }
+    }
+
+    @Override
+    public void clearOverlay(Pane target, MapTile[] tiles) {
+        for (MapTile tile : tiles) {
+            String bgId = tile.x() + "ol" + tile.y();
+            target.getChildren().removeIf(p -> p.getId() != null && p.getId().equals(bgId));
         }
     }
 
