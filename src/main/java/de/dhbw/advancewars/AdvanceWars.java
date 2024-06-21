@@ -1,5 +1,6 @@
 package de.dhbw.advancewars;
 
+import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.event.GameController;
 import de.dhbw.advancewars.event.IGameController;
 import de.dhbw.advancewars.graphics.IMapRenderer;
@@ -14,12 +15,14 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.List;
 
 public class AdvanceWars extends Application {
     private static IGameController gameController;
     private static IMapService mapService;
     private static IMapRenderer mapRenderer;
     private static MapDTO map;
+    private static List<ICharacter> characters;
 
     /**
      * Starts the FX app and initializes required services.
@@ -90,6 +93,24 @@ public class AdvanceWars extends Application {
      */
     public static void setMap(MapDTO map) {
         AdvanceWars.map = map;
+    }
+
+    /**
+     * Returns the list of characters.
+     *
+     * @return The list of characters.
+     */
+    public static List<ICharacter> getCharacters() {
+        return characters;
+    }
+
+    /**
+     * Sets the list of characters.
+     *
+     * @param characters The list of characters to set.
+     */
+    public static void setCharacters(List<ICharacter> characters) {
+        AdvanceWars.characters = characters;
     }
 
     /**

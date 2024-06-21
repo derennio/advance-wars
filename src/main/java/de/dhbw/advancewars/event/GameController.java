@@ -40,7 +40,7 @@ public class GameController implements IGameController {
      */
     @Override
     public void handleTileHover(MapTile tile) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        //throw new UnsupportedOperationException("Not implemented yet");
 
     }
 
@@ -49,7 +49,7 @@ public class GameController implements IGameController {
      */
     @Override
     public void handleTileExit(MapTile tile) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        //throw new UnsupportedOperationException("Not implemented yet");
 
     }
 
@@ -58,7 +58,7 @@ public class GameController implements IGameController {
      */
     @Override
     public void handleTileRightClick(MapTile tile) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        //throw new UnsupportedOperationException("Not implemented yet");
 
     }
 
@@ -67,7 +67,7 @@ public class GameController implements IGameController {
      */
     @Override
     public void handleTileLeftClick(MapTile tile) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        //throw new UnsupportedOperationException("Not implemented yet");
 
     }
 

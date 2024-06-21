@@ -1,5 +1,6 @@
 package de.dhbw.advancewars.graphics;
 
+import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.event.IGameController;
 import de.dhbw.advancewars.maps.data.MapTile;
 import javafx.scene.layout.Pane;
@@ -26,4 +27,6 @@ public interface IMapRenderer {
     void overlayTiles(Pane target, MapTile[] tiles);
 
     void clearOverlay(Pane target, MapTile[] tiles);
+
+    void renderCharacter(Pane target, MapTile tile, ICharacter character);
 }

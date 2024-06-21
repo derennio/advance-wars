@@ -1,14 +1,16 @@
 package de.dhbw.advancewars.graphics;
 
 import de.dhbw.advancewars.AdvanceWars;
+import de.dhbw.advancewars.character.CharacterClass;
+import de.dhbw.advancewars.character.ICharacter;
+import de.dhbw.advancewars.character.land.Infantry;
 import de.dhbw.advancewars.event.IGameController;
 import de.dhbw.advancewars.maps.IMapService;
-import de.dhbw.advancewars.maps.data.MapDTO;
-import de.dhbw.advancewars.maps.data.MapTile;
-import de.dhbw.advancewars.maps.data.TileType;
+import de.dhbw.advancewars.maps.data.*;
 import javafx.geometry.Insets;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -34,9 +36,12 @@ public class MapRenderer implements IMapRenderer {
     public void renderMap(String mapPath, Pane target, IGameController controller) throws IOException {
         // First of all, the map data is retrieved from the map service.
         MapDTO map = null;
+        MapSpawnConfiguration mapSpawnConfiguration = null;
         try {
             map = mapService.loadMap("src/main/resources/assets/maps/" + mapPath + ".pak0");
             AdvanceWars.setMap(map);
+
+            mapSpawnConfiguration = mapService.loadMapSpawnConfiguration("src/main/resources/assets/maps/" + mapPath + "_spawn.pak0");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -85,6 +90,13 @@ public class MapRenderer implements IMapRenderer {
                 target.getChildren().add(tile);
             }
         }
+
+        // The characters are rendered to the map.
+        for (SpawnDTO spawn : mapSpawnConfiguration.getSpawns()) {
+            ICharacter character = getCharacter(spawn.characterClass());
+            assert character != null;
+            renderCharacter(target, map.tiles()[spawn.x()][spawn.y()], character);
+        }
     }
 
     @Override
@@ -95,7 +107,7 @@ public class MapRenderer implements IMapRenderer {
             overlay.setPrefSize(TILE_SIZE, TILE_SIZE);
             overlay.relocate(tile.x() * TILE_SIZE, tile.y() * TILE_SIZE);
 
-            Background hoverEffect = new Background(new BackgroundFill(javafx.scene.paint.Color.rgb(0, 0, 0, 0.3), CornerRadii.EMPTY, Insets.EMPTY));
+            Background hoverEffect = new Background(new BackgroundFill(Color.rgb(0, 0, 0, 0.3), CornerRadii.EMPTY, Insets.EMPTY));
 
             overlay.setBackground(hoverEffect);
             target.getChildren().add(overlay);
@@ -110,6 +122,30 @@ public class MapRenderer implements IMapRenderer {
         }
     }
 
+    @Override
+    public void renderCharacter(Pane target, MapTile tile, ICharacter character) {
+        Pane characterPane = new Pane();
+        characterPane.setPrefSize(TILE_SIZE, TILE_SIZE);
+        characterPane.relocate(tile.x() * TILE_SIZE, tile.y() * TILE_SIZE);
+
+        BackgroundImage backgroundImage = new BackgroundImage(
+                new Image(
+                        Objects.requireNonNull(getClass().getResource(character.getCharacterAssetPath())).toString(),
+                        TILE_SIZE,
+                        TILE_SIZE,
+                        false,
+                        true
+                ),
+                BackgroundRepeat.REPEAT,
+                BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.DEFAULT,
+                BackgroundSize.DEFAULT);
+
+        characterPane.setBackground(new Background(backgroundImage));
+
+        target.getChildren().add(characterPane);
+    }
+
     /**
      * @param tileType The type of the tile to get the image for.
      * @return The path to the image for the given tile type.
@@ -120,6 +156,23 @@ public class MapRenderer implements IMapRenderer {
             case SEA -> "/assets/img/sea.png";
             case MOUNTAIN -> "/assets/img/mountain.png";
             case WOOD -> "/assets/img/wood.png";
+        };
+    }
+
+    /**
+     * @param characterClass The class of the character to get.
+     * @return The character instance for the given class.
+     */
+    private ICharacter getCharacter(CharacterClass characterClass) {
+        return switch (characterClass) {
+            case INFANTRY -> new Infantry();
+            case MECH -> null;
+            case TANK -> null;
+            case ARTILLERY -> null;
+            case ANTI_AIR -> null;
+            case FIGHTER -> null;
+            case BOMBER -> null;
+            case BATTLE_COPTER -> null;
         };
     }
 }

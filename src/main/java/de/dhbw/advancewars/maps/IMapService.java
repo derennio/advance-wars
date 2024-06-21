@@ -1,6 +1,7 @@
 package de.dhbw.advancewars.maps;
 
 import de.dhbw.advancewars.maps.data.MapDTO;
+import de.dhbw.advancewars.maps.data.MapSpawnConfiguration;
 
 import java.io.IOException;
 
@@ -20,10 +21,20 @@ public interface IMapService {
     MapDTO loadMap(String path) throws IOException, ClassNotFoundException;
 
     /**
-     * Saves the given map in serialized format to the given path.
+     * Saves the given object in serialized format to the given path.
      *
-     * @param map  The map to save.
+     * @param obj  The serializable object to save.
      * @param path The path to save the map to.
      */
-    void saveMap(MapDTO map, String path);
+    void saveFile(Object obj, String path);
+
+    /**
+     * Loads a map spawn configuration's serialized data from the given path and converts it into a DTO.
+     *
+     * @param path The path to the map spawn configuration file.
+     * @return The loaded map spawn configuration.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
+    MapSpawnConfiguration loadMapSpawnConfiguration(String path) throws IOException, ClassNotFoundException;
 }
