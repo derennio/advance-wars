@@ -2,6 +2,8 @@ package de.dhbw.advancewars.event;
 
 import de.dhbw.advancewars.maps.data.MapTile;
 
+import java.util.List;
+
 /**
  * A controller for events surrounding and regarding a game/match.
  */
@@ -61,4 +63,13 @@ public interface IGameController {
      * @param tile The tile that was middle-clicked.
      */
     void handleTileMiddleClick(MapTile tile);
+
+    /**
+     * Calculate the most direct way to a certain tile.
+     *
+     * @param start The starting tile.
+     * @param end   The target tile.
+     * @return The tiles to cross.
+     */
+    List<MapTile> getPath(MapTile start, MapTile end);
 }

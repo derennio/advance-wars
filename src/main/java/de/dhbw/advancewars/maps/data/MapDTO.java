@@ -14,4 +14,12 @@ public record MapDTO(String name, int width, int height, MapTile[][] tiles) impl
                 ", height=" + height +
                 '}';
     }
+
+    public MapTile offset(int x, int y) {
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            return null;
+        }
+
+        return tiles[x][y];
+    }
 }
