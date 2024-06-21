@@ -6,6 +6,7 @@ import de.dhbw.advancewars.graphics.IMapRenderer;
 import de.dhbw.advancewars.graphics.MapRenderer;
 import de.dhbw.advancewars.maps.IMapService;
 import de.dhbw.advancewars.maps.MapService;
+import de.dhbw.advancewars.maps.data.MapDTO;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -18,6 +19,7 @@ public class AdvanceWars extends Application {
     private static IGameController gameController;
     private static IMapService mapService;
     private static IMapRenderer mapRenderer;
+    private static MapDTO map;
 
     /**
      * Starts the FX app and initializes required services.
@@ -70,6 +72,24 @@ public class AdvanceWars extends Application {
      */
     public static IMapRenderer getMapRenderer() {
         return mapRenderer;
+    }
+
+    /**
+     * Returns the current map.
+     *
+     * @return The current map.
+     */
+    public static MapDTO getMap() {
+        return map;
+    }
+
+    /**
+     * Sets the current map.
+     *
+     * @param map The map to set.
+     */
+    public static void setMap(MapDTO map) {
+        AdvanceWars.map = map;
     }
 
     /**
