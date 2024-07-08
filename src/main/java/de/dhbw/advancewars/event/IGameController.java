@@ -1,5 +1,6 @@
 package de.dhbw.advancewars.event;
 
+import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.maps.data.MapTile;
 
 /**
@@ -28,6 +29,14 @@ public interface IGameController {
     void handleTileClick(MapTile tile);
 
     /**
+     * Handle the user clicking on a character.
+     *
+     * @param character The character that was clicked.
+     * @param interactionType The type of interaction that was performed.
+     */
+    void handleCharacterClick(ICharacter character, InteractionType interactionType);
+
+    /**
      * Handle the user hovering over a tile.
      *
      * @param tile The tile that was hovered over.
@@ -42,23 +51,22 @@ public interface IGameController {
     void handleTileExit(MapTile tile);
 
     /**
-     * Handle the user right-clicking on a tile.
+     * Handle the user attempting to move a character.
      *
-     * @param tile The tile that was right-clicked.
+     * @param character The character to move.
+     * @param targetTile The target tile to move to.
+     *
+     * @return Whether the character can move to the target tile.
      */
-    void handleTileRightClick(MapTile tile);
+    boolean canMoveCharacter(ICharacter character, MapTile targetTile);
 
     /**
-     * Handle the user left-clicking on a tile.
-     *
-     * @param tile The tile that was left-clicked.
+     * Returns true when a character is actively selected for action
      */
-    void handleTileLeftClick(MapTile tile);
+    boolean characterSelected();
 
     /**
-     * Handle the user middle-clicking on a tile.
-     *
-     * @param tile The tile that was middle-clicked.
+     * Returns the currently selected character
      */
-    void handleTileMiddleClick(MapTile tile);
+    ICharacter getSelectedCharacter();
 }

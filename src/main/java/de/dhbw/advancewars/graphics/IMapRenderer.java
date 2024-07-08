@@ -3,6 +3,7 @@ package de.dhbw.advancewars.graphics;
 import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.event.IGameController;
 import de.dhbw.advancewars.maps.data.MapTile;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.layout.Pane;
 
 import java.io.IOException;
@@ -24,9 +25,11 @@ public interface IMapRenderer {
      */
     void renderMap(String mapPath, Pane target, IGameController controller) throws IOException;
 
-    void overlayTiles(Pane target, MapTile[] tiles);
+    void overlayTiles(MapTile[] tiles);
 
-    void clearOverlay(Pane target, MapTile[] tiles);
+    void clearOverlay(MapTile[] tiles);
 
-    void renderCharacter(Pane target, MapTile tile, ICharacter character);
+    void renderCharacter(MapTile tile, ICharacter character, IGameController controller);
+
+    void openMenu(ICharacter character, IGameController controller);
 }

@@ -3,6 +3,8 @@ package de.dhbw.advancewars.character;
 import de.dhbw.advancewars.maps.data.MapTile;
 import de.dhbw.advancewars.player.PlayerSide;
 
+import java.util.UUID;
+
 /**
  * Represents the type of character.
  */
@@ -13,13 +15,6 @@ public interface ICharacter {
      * @return The type of the character.
      */
     CharacterType getType();
-
-    /**
-     * Get the name of the character.
-     *
-     * @return The name of the character.
-     */
-    String getName();
 
     /**
      * Get the health of the character.
@@ -71,9 +66,23 @@ public interface ICharacter {
     MapTile getPosition();
 
     /**
+     * Set the position of the character.
+     *
+     * @param position The position of the character.
+     */
+    void setPosition(MapTile position);
+
+    /**
      * Get the side of the player.
      *
      * @return The side of the player.
      */
     PlayerSide getPlayerSide();
+
+    /**
+     * Get the unique identifier of the character.
+     *
+     * @return The unique identifier of the character.
+     */
+    UUID getId();
 }

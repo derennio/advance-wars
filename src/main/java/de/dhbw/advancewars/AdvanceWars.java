@@ -15,6 +15,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AdvanceWars extends Application {
@@ -38,6 +39,8 @@ public class AdvanceWars extends Application {
 
         gameController = new GameController();
         gameController.handleUserSetMap("piston_dam");
+
+        characters = new ArrayList<>();
 
         // Load the game view
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/assets/views/game-view.fxml"));
@@ -111,6 +114,18 @@ public class AdvanceWars extends Application {
      */
     public static void setCharacters(List<ICharacter> characters) {
         AdvanceWars.characters = characters;
+    }
+
+    /**
+     * Adds a character to the list of characters.
+     *
+     * @param character The character to add.
+     */
+    public static void addCharacter(ICharacter character) {
+        if (characters == null)
+            characters = new ArrayList<>();
+
+        characters.add(character);
     }
 
     /**

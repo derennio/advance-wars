@@ -5,12 +5,22 @@ import de.dhbw.advancewars.character.CharacterClass;
 import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.character.land.Infantry;
 import de.dhbw.advancewars.event.IGameController;
+import de.dhbw.advancewars.event.InteractionType;
 import de.dhbw.advancewars.maps.IMapService;
 import de.dhbw.advancewars.maps.data.*;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -21,6 +31,8 @@ import java.util.Objects;
 public class MapRenderer implements IMapRenderer {
     private final int TILE_SIZE = 40;
     private final IMapService mapService;
+    private MapPane mapPane;
+    private ContextMenu contextMenu;
 
     public MapRenderer(IMapService mapService) {
         this.mapService = mapService;
@@ -34,6 +46,8 @@ public class MapRenderer implements IMapRenderer {
      */
     @Override
     public void renderMap(String mapPath, Pane target, IGameController controller) throws IOException {
+        this.mapPane = (MapPane) target;
+
         // First of all, the map data is retrieved from the map service.
         MapDTO map = null;
         MapSpawnConfiguration mapSpawnConfiguration = null;
@@ -77,14 +91,15 @@ public class MapRenderer implements IMapRenderer {
                 MapDTO finalMap = map;
 
                 // The tile click event is handled by the controller.
-                tile.setOnMouseClicked(event -> controller.handleTileClick(finalMap.tiles()[finalX][finalY]));
+                tile.setOnMouseClicked(event ->
+                    controller.handleTileClick(finalMap.tiles()[finalX][finalY]));
                 tile.setOnMouseEntered(event -> {
                     controller.handleTileHover(finalMap.tiles()[finalX][finalY]);
-                    overlayTiles(target, new MapTile[]{finalMap.tiles()[finalX][finalY]});
+                    overlayTiles(new MapTile[]{finalMap.tiles()[finalX][finalY]});
                 });
                 tile.setOnMouseExited(event -> {
                     controller.handleTileExit(finalMap.tiles()[finalX][finalY]);
-                    clearOverlay(target, new MapTile[]{finalMap.tiles()[finalX][finalY]});
+                    clearOverlay(new MapTile[]{finalMap.tiles()[finalX][finalY]});
                 });
 
                 target.getChildren().add(tile);
@@ -95,38 +110,67 @@ public class MapRenderer implements IMapRenderer {
         for (SpawnDTO spawn : mapSpawnConfiguration.getSpawns()) {
             ICharacter character = getCharacter(spawn.characterClass());
             assert character != null;
-            renderCharacter(target, map.tiles()[spawn.x()][spawn.y()], character);
+
+            MapTile spawnPosition = map.tiles()[spawn.x()][spawn.y()];
+            character.setPosition(spawnPosition);
+
+            renderCharacter(spawnPosition, character, controller);
+            AdvanceWars.addCharacter(character);
         }
     }
 
     @Override
-    public void overlayTiles(Pane target, MapTile[] tiles) {
+    public void overlayTiles(MapTile[] tiles) {
         for (MapTile tile : tiles) {
             Pane overlay = new Pane();
             overlay.setId(tile.x() + "ol" + tile.y());
             overlay.setPrefSize(TILE_SIZE, TILE_SIZE);
             overlay.relocate(tile.x() * TILE_SIZE, tile.y() * TILE_SIZE);
 
-            Background hoverEffect = new Background(new BackgroundFill(Color.rgb(0, 0, 0, 0.3), CornerRadii.EMPTY, Insets.EMPTY));
+            Color color = Color.rgb(0, 0, 0, 0.3);
+            if (AdvanceWars.getGameController().characterSelected()) {
+                if (AdvanceWars.getGameController().canMoveCharacter(AdvanceWars.getGameController().getSelectedCharacter(), tile)) {
+                    color = Color.rgb(0, 89, 79, 0.45);
+                } else {
+                    color = Color.rgb(255, 0, 0, 0.45);
+                }
+            }
+
+            Background hoverEffect = new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY));
 
             overlay.setBackground(hoverEffect);
-            target.getChildren().add(overlay);
+            this.mapPane.getChildren().add(overlay);
         }
     }
 
     @Override
-    public void clearOverlay(Pane target, MapTile[] tiles) {
+    public void clearOverlay(MapTile[] tiles) {
         for (MapTile tile : tiles) {
             String bgId = tile.x() + "ol" + tile.y();
-            target.getChildren().removeIf(p -> p.getId() != null && p.getId().equals(bgId));
+            this.mapPane.getChildren().removeIf(p -> p.getId() != null && p.getId().equals(bgId));
         }
     }
 
     @Override
-    public void renderCharacter(Pane target, MapTile tile, ICharacter character) {
+    public void renderCharacter(MapTile tile, ICharacter character, IGameController controller) {
+        Pane oldPane = (Pane) mapPane.lookup("#c" + character.getId());
+        if (oldPane != null) {
+            mapPane.getChildren().remove(oldPane);
+        }
+
         Pane characterPane = new Pane();
         characterPane.setPrefSize(TILE_SIZE, TILE_SIZE);
+        characterPane.setId("c" + character.getId());
         characterPane.relocate(tile.x() * TILE_SIZE, tile.y() * TILE_SIZE);
+        characterPane.setOnMouseClicked(event -> {
+            for (ICharacter c : AdvanceWars.getCharacters()) {
+                unFocusCharacter((Pane) mapPane.lookup("#c" + c.getId()));
+            }
+
+            controller.handleCharacterClick(character, InteractionType.P0);
+
+            focusCharacter(characterPane);
+        });
 
         BackgroundImage backgroundImage = new BackgroundImage(
                 new Image(
@@ -143,7 +187,40 @@ public class MapRenderer implements IMapRenderer {
 
         characterPane.setBackground(new Background(backgroundImage));
 
-        target.getChildren().add(characterPane);
+        this.mapPane.getChildren().add(characterPane);
+    }
+
+    @Override
+    public void openMenu(ICharacter character, IGameController controller) {
+        if (this.contextMenu != null)
+            this.contextMenu.hide();
+
+        MapTile tile = character.getPosition();
+
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem moveItem = new MenuItem("Move");
+        moveItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.MOVE));
+
+        MenuItem attackItem = new MenuItem("Attack");
+        attackItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.ATTACK));
+
+        MenuItem waitItem = new MenuItem("Wait");
+        waitItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.WAIT));
+
+        contextMenu.getItems().addAll(moveItem, attackItem, waitItem);
+
+        contextMenu.setStyle(
+                "-fx-background-color: #ffffff; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-text-color: white; " +
+                        "-fx-border-color: #2f2f2f; " +
+                        "-fx-border-width: 0; " +
+                        "-fx-padding: 5px;");
+        showContextMenuForTile(tile, contextMenu);
+
+        this.contextMenu = contextMenu;
     }
 
     /**
@@ -175,4 +252,49 @@ public class MapRenderer implements IMapRenderer {
             case BATTLE_COPTER -> null;
         };
     }
+
+    /**
+     * @param cPane The pane to focus the character on.
+     */
+    private void focusCharacter(Pane cPane) {
+        DoubleProperty hue = new SimpleDoubleProperty();
+
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.ZERO, new KeyValue(hue, 0)),
+                new KeyFrame(Duration.seconds(5.0), new KeyValue(hue, 1))
+        );
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
+        hue.addListener((observable, oldValue, newValue) -> {
+            Color color = Color.hsb(newValue.doubleValue() * 360, 1, 1);
+            cPane.setBorder(new Border(new BorderStroke(color, BorderStrokeStyle.SOLID, null, new BorderWidths(1.5))));
+        });
+    }
+
+    /**
+     * @param cPane The pane to unfocus the character on.
+     */
+    private void unFocusCharacter(Pane cPane) {
+        cPane.setBorder(null);
+    }
+
+    /**
+     * A context menu's location is based on the screen, not the scene.
+     * This method converts the local coordinates of a pane to screen coordinates.
+     * The context menu is then shown at the screen coordinates.
+     *
+     * @param tile         The tile to show the context menu for.
+     * @param contextMenu  The context menu to show.
+     */
+    private void showContextMenuForTile(MapTile tile, ContextMenu contextMenu) {
+        double paneX = (tile.x() + 1) * TILE_SIZE;
+        double paneY = (tile.y() + 1) * TILE_SIZE;
+
+        Point2D scenePoint = mapPane.localToScene(paneX, paneY);
+        Point2D screenPoint = mapPane.localToScreen(scenePoint.getX(), scenePoint.getY());
+
+        contextMenu.show(mapPane, screenPoint.getX(), screenPoint.getY());
+    }
+
 }
