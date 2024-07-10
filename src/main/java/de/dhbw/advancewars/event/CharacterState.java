@@ -7,5 +7,6 @@ public enum CharacterState {
     IDLE,
     MOVING,
     ATTACKING,
-    WAITING
+    WAITING,
+    MERGING
 }

@@ -85,4 +85,11 @@ public interface ICharacter {
      * @return The unique identifier of the character.
      */
     UUID getId();
+
+    /**
+     * Damage the character.
+     *
+     * @param damage The amount of damage to deal.
+     */
+    void damage(int damage);
 }

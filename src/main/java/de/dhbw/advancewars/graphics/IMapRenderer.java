@@ -32,4 +32,6 @@ public interface IMapRenderer {
     void renderCharacter(MapTile tile, ICharacter character, IGameController controller);
 
     void openMenu(ICharacter character, IGameController controller);
+
+    void renderInfoPanel(IGameController controller);
 }

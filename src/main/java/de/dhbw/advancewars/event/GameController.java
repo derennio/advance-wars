@@ -6,6 +6,7 @@ import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.graphics.MapPane;
 import de.dhbw.advancewars.maps.data.MapTile;
 import de.dhbw.advancewars.maps.data.TileType;
+import de.dhbw.advancewars.player.PlayerSide;
 import javafx.scene.control.ContextMenu;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class GameController implements IGameController {
 
     private CharacterState characterState = CharacterState.IDLE;
     private UUID selectedCharacterId;
+    private PlayerSide currentTurn = PlayerSide.PLAYER_1;
 
     /**
      * @param mapName The name of the map to set.
@@ -67,6 +69,7 @@ public class GameController implements IGameController {
                 selectedCharacter.setPosition(tile);
                 AdvanceWars.getMapRenderer().renderCharacter(tile, selectedCharacter, this);
                 this.characterState = CharacterState.IDLE;
+                this.takeTurn();
             }
         }
 
@@ -80,9 +83,48 @@ public class GameController implements IGameController {
      */
     @Override
     public void handleCharacterClick(ICharacter character, InteractionType interactionType) {
+        if (this.currentTurn != character.getPlayerSide()) {
+            return;
+        }
+
+        if (this.characterState == CharacterState.MERGING) {
+            boolean characterExists = AdvanceWars.getCharacters()
+                    .stream()
+                    .anyMatch(x -> x.getId() == selectedCharacterId);
+
+            if (!characterExists) {
+                this.characterState = CharacterState.IDLE;
+                return;
+            }
+
+            ICharacter selectedCharacter = AdvanceWars.getCharacters()
+                    .stream()
+                    .filter(x -> x.getId() == selectedCharacterId)
+                    .findFirst()
+                    .get();
+
+            if (selectedCharacter.getPlayerSide() != character.getPlayerSide()) {
+                return;
+            }
+
+            if (selectedCharacter.getType() != character.getType()) {
+                return;
+            }
+
+            if (selectedCharacter.getPosition() != character.getPosition()) {
+                return;
+            }
+
+            // selectedCharacter.merge(character);
+
+            AdvanceWars.getCharacters().remove(character);
+            this.characterState = CharacterState.IDLE;
+            this.takeTurn();
+        }
+
         if (interactionType == InteractionType.P0) {
             this.characterState = CharacterState.WAITING;
-            selectedCharacterId = character.getId();
+            this.selectCharacter(character);
 
             AdvanceWars.getMapRenderer().openMenu(character, this);
         }
@@ -101,10 +143,15 @@ public class GameController implements IGameController {
             for (ICharacter c : enemiesInVision) {
                 /// TODO: Implement attack logic
             }
+            this.takeTurn();
         }
 
         if (interactionType == InteractionType.MOVE) {
             this.characterState = CharacterState.MOVING;
+        }
+
+        if (interactionType == InteractionType.UNITE) {
+            this.characterState = CharacterState.MERGING;
         }
     }
 
@@ -194,5 +241,46 @@ public class GameController implements IGameController {
                 .stream()
                 .filter(x -> calculateDistance(character.getPosition(), x.getPosition()) <= character.getVisionRange())
                 .toList();
+    }
+
+    /**
+     * Switch the current turn to the next player.
+     */
+    private void takeTurn() {
+        if (this.currentTurn == PlayerSide.PLAYER_1) {
+            this.currentTurn = PlayerSide.PLAYER_2;
+        } else {
+            this.currentTurn = PlayerSide.PLAYER_1;
+        }
+    }
+
+    /**
+     * Select a character for further action.
+     *
+     * @param character The character to select.
+     */
+    private void selectCharacter(ICharacter character) {
+        this.selectedCharacterId = character.getId();
+        AdvanceWars.getMapRenderer().renderInfoPanel(this);
+    }
+
+    /**
+     * Attack a character.
+     *
+     * @param attacker The character attacking.
+     * @param defender The character defending.
+     */
+    private void attackCharacter(ICharacter attacker, ICharacter defender) {
+        /// TODO: only prototyped, to be finished...
+        int damage = attacker.getAttackPower() - defender.getDefensePower();
+        if (damage < 0) {
+            damage = 0;
+        }
+
+        defender.damage(damage);
+
+        if (defender.getHealth() <= 0) {
+            AdvanceWars.getCharacters().remove(defender);
+        }
     }
 }

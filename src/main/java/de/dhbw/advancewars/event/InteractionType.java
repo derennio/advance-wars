@@ -7,5 +7,6 @@ public enum InteractionType {
     P0,
     MOVE,
     ATTACK,
-    WAIT
+    WAIT,
+    UNITE
 }

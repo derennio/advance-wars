@@ -8,6 +8,7 @@ import de.dhbw.advancewars.event.IGameController;
 import de.dhbw.advancewars.event.InteractionType;
 import de.dhbw.advancewars.maps.IMapService;
 import de.dhbw.advancewars.maps.data.*;
+import de.dhbw.advancewars.player.PlayerSide;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -17,6 +18,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -33,6 +35,7 @@ public class MapRenderer implements IMapRenderer {
     private final IMapService mapService;
     private MapPane mapPane;
     private ContextMenu contextMenu;
+    private Pane infoPanel;
 
     public MapRenderer(IMapService mapService) {
         this.mapService = mapService;
@@ -108,7 +111,7 @@ public class MapRenderer implements IMapRenderer {
 
         // The characters are rendered to the map.
         for (SpawnDTO spawn : mapSpawnConfiguration.getSpawns()) {
-            ICharacter character = getCharacter(spawn.characterClass());
+            ICharacter character = getCharacter(spawn.characterClass(), spawn.playerSide());
             assert character != null;
 
             MapTile spawnPosition = map.tiles()[spawn.x()][spawn.y()];
@@ -208,6 +211,9 @@ public class MapRenderer implements IMapRenderer {
         MenuItem waitItem = new MenuItem("Wait");
         waitItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.WAIT));
 
+        MenuItem uniteItem = new MenuItem("Unite");
+        uniteItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.UNITE));
+
         contextMenu.getItems().addAll(moveItem, attackItem, waitItem);
 
         contextMenu.setStyle(
@@ -223,26 +229,74 @@ public class MapRenderer implements IMapRenderer {
         this.contextMenu = contextMenu;
     }
 
+    @Override
+    public void renderInfoPanel(IGameController controller) {
+        this.infoPanel = new Pane();
+        this.infoPanel.setPrefSize(230, 130);
+        this.infoPanel.relocate(600, 300);
+
+        TextArea characterStats = getCharacterStats(controller);
+        this.infoPanel.getChildren().add(characterStats);
+
+        this.infoPanel.setStyle(
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 14px; " +
+                        "-fx-text-color: white; " +
+                        "-fx-border-color: #2f2f2f; " +
+                        "-fx-border-width: 0; " +
+                        "-fx-padding: 5px;");
+
+        mapPane.getChildren().add(this.infoPanel);
+    }
+
+
+    /**
+     * Retrieves a text area containing all important information for the info panel.
+     *
+     * @param controller The game controller.
+     * @return           The text area.
+     */
+    private TextArea getCharacterStats(IGameController controller) {
+        TextArea characterStats = new TextArea();
+        characterStats.relocate(0, 0);
+        characterStats.setPrefSize(230, 130);
+        characterStats.setEditable(false);
+        characterStats.setText(
+                "Selected Character: " + controller.getSelectedCharacter().getClass().getSimpleName() + "\n" +
+                "Health: " + controller.getSelectedCharacter().getHealth() + "\n" +
+                "Attack Power: " + controller.getSelectedCharacter().getAttackPower() + "\n" +
+                "Defense Power: " + controller.getSelectedCharacter().getDefensePower() + "\n" +
+                "Movement Range: " + controller.getSelectedCharacter().getMovementRange() + "\n" +
+                "Vision Range: " + controller.getSelectedCharacter().getVisionRange());
+
+        characterStats.setStyle("-fx-background-image: url('/assets/textures/medieval.jpg'); " +
+                "-fx-background-size: 200 600; " +
+                "-fx-background-repeat: no-repeat; " +
+                "-fx-background-position: center;");
+        return characterStats;
+    }
+
     /**
      * @param tileType The type of the tile to get the image for.
      * @return The path to the image for the given tile type.
      */
     private String getImage(TileType tileType) {
         return switch (tileType) {
-            case PLAIN -> "/assets/img/plain.png";
-            case SEA -> "/assets/img/sea.png";
-            case MOUNTAIN -> "/assets/img/mountain.png";
-            case WOOD -> "/assets/img/wood.png";
+            case PLAIN -> "/assets/textures/grass.png";
+            case SEA -> "/assets/textures/water.png";
+            case MOUNTAIN -> "/assets/textures/mountains.png";
+            case WOOD -> "/assets/textures/trees.png";
         };
     }
 
     /**
      * @param characterClass The class of the character to get.
+     * @param playerSide    The player side of the character to get.
      * @return The character instance for the given class.
      */
-    private ICharacter getCharacter(CharacterClass characterClass) {
+    private ICharacter getCharacter(CharacterClass characterClass, PlayerSide playerSide) {
         return switch (characterClass) {
-            case INFANTRY -> new Infantry();
+            case INFANTRY -> new Infantry(playerSide);
             case MECH -> null;
             case TANK -> null;
             case ARTILLERY -> null;

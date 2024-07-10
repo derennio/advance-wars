@@ -11,12 +11,17 @@ public class Infantry implements ICharacter {
     private final UUID cId;
 
     private MapTile position;
+    private PlayerSide side;
+    private double health;
 
     /**
      * Create a new Infantry character.
+     *
+     * @param playerSide The side of the player.
      */
-    public Infantry() {
+    public Infantry(PlayerSide playerSide) {
         this.cId = UUID.randomUUID();
+        this.side = playerSide;
     }
 
     @Override
@@ -51,7 +56,10 @@ public class Infantry implements ICharacter {
 
     @Override
     public String getCharacterAssetPath() {
-        return "/assets/characters/infantry.png";
+        if (this.side == PlayerSide.PLAYER_1) {
+            return "/assets/units_blue/infantry.png";
+        }
+        return "/assets/units_red/infantry.png";
     }
 
     @Override
@@ -71,7 +79,7 @@ public class Infantry implements ICharacter {
 
     @Override
     public PlayerSide getPlayerSide() {
-        return null;
+        return this.side;
     }
 
     /**
@@ -82,6 +90,16 @@ public class Infantry implements ICharacter {
     @Override
     public UUID getId() {
         return this.cId;
+    }
+
+    /**
+     * Damage the character.
+     *
+     * @param damage The amount of damage to deal.
+     */
+    @Override
+    public void damage(int damage) {
+        this.health -= damage;
     }
 
     @Override
