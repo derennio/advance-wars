@@ -12,7 +12,7 @@ public class Infantry implements ICharacter {
 
     private MapTile position;
     private PlayerSide side;
-    private double health;
+    private double health = 10;
 
     /**
      * Create a new Infantry character.
@@ -31,7 +31,7 @@ public class Infantry implements ICharacter {
 
     @Override
     public int getHealth() {
-        return 10;
+        return this.health;
     }
 
     @Override
