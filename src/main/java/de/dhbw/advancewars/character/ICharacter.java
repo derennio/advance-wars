@@ -92,4 +92,11 @@ public interface ICharacter {
      * @param damage The amount of damage to deal.
      */
     void damage(int damage);
+
+    /**
+     * Set the health of the character.
+     *
+     * @param health The health of the character.
+     */
+    void setHealth(int health);
 }

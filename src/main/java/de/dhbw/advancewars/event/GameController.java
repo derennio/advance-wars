@@ -283,4 +283,9 @@ public class GameController implements IGameController {
             AdvanceWars.getCharacters().remove(defender);
         }
     }
+
+    private void mergeCharacter(ICharacter character1, ICharacter character2) {
+        double health = Math.min(character1.getHealth() + character2.getHealth(), 10);
+        character1.setHealth(health);
+    }
 }
