@@ -36,12 +36,12 @@ public class Fighter implements ICharacter {
 
     @Override
     public int getAttackPower() {
-        return 1;
+        return 5;
     }
 
     @Override
     public int getDefensePower() {
-        return 1;
+        return 3;
     }
 
     @Override

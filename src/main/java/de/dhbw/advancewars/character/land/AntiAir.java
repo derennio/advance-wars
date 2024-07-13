@@ -36,12 +36,12 @@ public class AntiAir implements ICharacter {
 
     @Override
     public int getAttackPower() {
-        return 1;
+        return 3;
     }
 
     @Override
     public int getDefensePower() {
-        return 1;
+        return 4;
     }
 
     @Override

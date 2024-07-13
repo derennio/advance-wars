@@ -36,12 +36,12 @@ public class Bomber implements ICharacter {
 
     @Override
     public int getAttackPower() {
-        return 1;
+        return 6;
     }
 
     @Override
     public int getDefensePower() {
-        return 1;
+        return 6;
     }
 
     @Override
