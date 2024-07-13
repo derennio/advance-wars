@@ -36,7 +36,7 @@ public class Infantry implements ICharacter {
 
     @Override
     public int getAttackPower() {
-        return 4;
+        return 1;
     }
 
     @Override
@@ -46,12 +46,12 @@ public class Infantry implements ICharacter {
 
     @Override
     public int getMovementRange() {
-        return 30;
+        return 3;
     }
 
     @Override
     public int getVisionRange() {
-        return 20;
+        return 2;
     }
 
     @Override
