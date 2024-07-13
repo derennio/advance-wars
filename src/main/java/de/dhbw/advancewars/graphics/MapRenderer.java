@@ -33,6 +33,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.util.Pair;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -220,14 +221,8 @@ public class MapRenderer implements IMapRenderer {
         MenuItem attackItem = new MenuItem("Attack");
         attackItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.ATTACK));
 
-        //MenuItem waitItem = new MenuItem("Wait");
-        //waitItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.WAIT));
-
         MenuItem uniteItem = new MenuItem("Unite");
         uniteItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.UNITE));
-
-        //MenuItem infoItem = new MenuItem("Info");
-        //infoItem.setOnAction(event -> renderInfoPanel(character, controller));
 
         MenuItem endTurnItem = new MenuItem("End Turn");
         endTurnItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.END_TURN));
@@ -250,12 +245,15 @@ public class MapRenderer implements IMapRenderer {
     @Override
     public void renderInfoPanel(ICharacter character, IGameController controller) {
         this.infoPanel = new Pane();
+        int infoPanelWidth = 230;
+        int infoPanelHeight = 130;
 
         MapTile pos = character.getPosition();
-        int x = (pos.x() + 1) * TILE_SIZE;
-        int y = (pos.y() + 1) * TILE_SIZE;
+        Pair<Integer, Integer> newPos = determineInfoPosition(pos, infoPanelWidth, infoPanelHeight);
+        int x = newPos.getKey() * TILE_SIZE;
+        int y = newPos.getValue() * TILE_SIZE;
 
-        this.infoPanel.setPrefSize(230, 130);
+        this.infoPanel.setPrefSize(infoPanelWidth, infoPanelHeight);
         this.infoPanel.relocate(x, y);
 
         TextArea characterStats = getCharacterStats(character, controller);
@@ -295,36 +293,6 @@ public class MapRenderer implements IMapRenderer {
             mapPane.getChildren().remove(characterPane);
         }
     }
-    
-    
-    /*  This method is not needed at the moment
-    @Override
-    public void renderGameInfoPopup(IGameController controller)
-    {
-        Stage popup = new Stage();
-        popup.setTitle("Game Info");
-
-        TextArea gameInfo = new TextArea();
-        gameInfo.relocate(0, 0);
-        gameInfo.setPrefSize(230, 130);
-        gameInfo.setEditable(false);
-
-        gameInfo.setText(
-                "Current turn: " + controller.getCurrentTurn().toString() + "\n" +
-                "Player 1 still has " + AdvanceWars.getCharacters().stream().filter(x -> x.getPlayerSide() == PlayerSide.PLAYER_1).count() + " characters left.\n" +
-                "Player 2 still has " + AdvanceWars.getCharacters().stream().filter(x -> x.getPlayerSide() == PlayerSide.PLAYER_2).count() + " characters left.\n" +
-                "You're playing on " + AdvanceWars.getMap().name()
-        );
-
-        gameInfo.setStyle("-fx-background-image: url('/assets/textures/medieval.jpg'); " +
-                "-fx-background-size: 200 600; " +
-                "-fx-background-repeat: no-repeat; " +
-                "-fx-background-position: center;");
-
-        popup.setScene(new javafx.scene.Scene(gameInfo));
-        popup.show();
-    }*/
-
 
     /**
      * Retrieves a text area containing all important information for the info panel.
@@ -437,4 +405,40 @@ public class MapRenderer implements IMapRenderer {
 
         contextMenu.show(mapPane, screenPoint.getX(), screenPoint.getY());
     }
+
+    /**
+     * Determines the position of the info panel based on the tile's position.
+     *
+     * @param tile   The tile to determine the position for.
+     * @param width  The width of the info panel.
+     * @param height The height of the info panel.
+     * @return The position of the info panel.
+     */
+    private Pair<Integer, Integer> determineInfoPosition(MapTile tile, int width, int height) {
+        int maxX = AdvanceWars.getMap().tiles().length;
+        int maxY = AdvanceWars.getMap().tiles()[0].length;
+
+        int dx = (maxX - tile.x()) * TILE_SIZE;
+        int dy = (maxY - tile.y()) * TILE_SIZE;
+
+        if (dx < width) {
+            if (dy < height) {
+                // Top left
+                int requiredX = width / TILE_SIZE;
+                int requiredY = height / TILE_SIZE;
+                return new Pair<>(tile.x() - requiredX, tile.y() - requiredY);
+            } else {
+                // Bottom left
+                int requiredX = width / TILE_SIZE;
+                return new Pair<>(tile.x() - requiredX, tile.y() + 1);
+            }
+        } else {
+            if (dy < height) {
+                return new Pair<>(tile.x() + 1, tile.y() - 1);
+            } else {
+                return new Pair<>(tile.x() + 1, tile.y() + 1);
+            }
+        }
+    }
+
 }
