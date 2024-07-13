@@ -14,6 +14,8 @@ public class Infantry implements ICharacter {
     private MapTile position;
     private PlayerSide side;
     private int health = 10;
+    private boolean wasMoved = false;
+    private boolean hasAttacked = false;
 
     /**
      * Create a new Infantry character.
@@ -36,16 +38,6 @@ public class Infantry implements ICharacter {
     }
 
     @Override
-    public int getAttackPower() {
-        return 1;
-    }
-
-    @Override
-    public int getDefensePower() {
-        return 1;
-    }
-
-    @Override
     public int getMovementRange() {
         return 3;
     }
@@ -53,6 +45,16 @@ public class Infantry implements ICharacter {
     @Override
     public int getVisionRange() {
         return 2;
+    }
+
+    @Override
+    public boolean wasAlreadyMoved() {
+        return wasMoved;
+    }
+
+    @Override
+    public boolean hasAlreadyAttacked() {
+        return hasAttacked;
     }
 
     @Override

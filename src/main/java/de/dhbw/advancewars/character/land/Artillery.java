@@ -14,6 +14,8 @@ public class Artillery implements ICharacter {
     private MapTile position;
     private PlayerSide side;
     private int health = 10;
+    private boolean wasMoved = false;
+    private boolean hasAttacked = false;
 
     /**
      * Create a new Artillery character.
@@ -36,16 +38,6 @@ public class Artillery implements ICharacter {
     }
 
     @Override
-    public int getAttackPower() {
-        return 5;
-    }
-
-    @Override
-    public int getDefensePower() {
-        return 4;
-    }
-
-    @Override
     public int getMovementRange() {
         return 5;
     }
@@ -53,6 +45,16 @@ public class Artillery implements ICharacter {
     @Override
     public int getVisionRange() {
         return 1;
+    }
+
+    @Override
+    public boolean wasAlreadyMoved() {
+        return wasMoved;
+    }
+
+    @Override
+    public boolean hasAlreadyAttacked() {
+        return hasAttacked;
     }
 
     @Override

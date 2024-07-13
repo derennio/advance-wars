@@ -24,20 +24,6 @@ public interface ICharacter {
     int getHealth();
 
     /**
-     * Get the attack power of the character.
-     *
-     * @return The attack power of the character.
-     */
-    int getAttackPower();
-
-    /**
-     * Get the defense power of the character.
-     *
-     * @return The defense power of the character.
-     */
-    int getDefensePower();
-
-    /**
      * Get the movement range of the character.
      *
      * @return The movement range of the character.
@@ -50,6 +36,20 @@ public interface ICharacter {
      * @return The vision range of the character.
      */
     int getVisionRange();
+
+    /**
+     * Get the info if the character was already moved in this turn.
+     *
+     * @return The info if the character was already moved in this turn.
+     */
+    boolean wasAlreadyMoved();
+
+    /**
+     * Get the info if the character has already attacked in this turn.
+     *
+     * @return The info if the character has already attacked in this turn.
+     */
+    boolean hasAlreadyAttacked();
 
     /**
      * Get the asset path of the character.

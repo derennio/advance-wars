@@ -51,7 +51,7 @@ public class GameController implements IGameController {
     @Override
     public void handleTileClick(MapTile tile) {
         System.out.println("Clicked on tile " + tile);
-        AdvanceWars.getMapRenderer().renderGameInfoPopup(this);
+        //AdvanceWars.getMapRenderer().renderGameInfoPopup(this);
         if (this.characterState == CharacterState.MOVING) {
             ICharacter selectedCharacter = getSelectedCharacter();
 

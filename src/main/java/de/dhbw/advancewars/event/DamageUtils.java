@@ -1,6 +1,5 @@
 package de.dhbw.advancewars.event;
 
-import de.dhbw.advancewars.character.CharacterType;
 import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.maps.data.TileType;
 
@@ -12,8 +11,8 @@ public class DamageUtils {
      */
     private final static int[][] damageMatrix = {
     //   I  M  T  Ar AA F  B  BC      -> Defender
-        {2, 2, 1, 2, 1, 0, 0, 1}, // Infantry       |
-        {3, 2, 3, 4, 3, 0, 0, 1}, // Mech           |
+        {3, 3, 1, 2, 1, 0, 0, 1}, // Infantry       |
+        {3, 3, 3, 4, 3, 0, 0, 1}, // Mech           |
         {4, 4, 2, 4, 3, 0, 0, 1}, // Tank           |
         {5, 5, 4, 4, 3, 0, 0, 0}, // Artillery      |
         {5, 5, 2, 3, 2, 3, 3, 5}, // AntiAir         > Attacker
@@ -35,10 +34,9 @@ public class DamageUtils {
      */
     public static int calculateDamage(ICharacter attacker, ICharacter defender, boolean isAttack) {
         float terrainMultiplier = getTerrainMultiplier(attacker, defender);
-        float characterTypeMultiplier = getCharacterTypeMultiplier(attacker, defender);
 
         int baseDamage = damageMatrix[attacker.getIndex()][defender.getIndex()];
-        float damage = (baseDamage * (isAttack?attackFactor:defendFactor) * terrainMultiplier * characterTypeMultiplier * (attacker.getHealth()/10f));
+        float damage = (baseDamage * (isAttack?attackFactor:defendFactor) * terrainMultiplier * (attacker.getHealth()/10f));
         if (damage < 1 && damage > 0) {
             damage = 1;
         }
@@ -102,30 +100,6 @@ public class DamageUtils {
                     return 1.8f;
                 }
                 break;
-        }
-
-        return 1.0f;
-    }
-
-    /**
-     * Calculate the damage multiplier dealt by one type of character to another.
-     *
-     * @param attacker The character that deals the damage.
-     * @param defender The character that receives the damage.
-     *
-     * @return The damage dealt by characterA to characterB.
-     */
-    private static float getCharacterTypeMultiplier(ICharacter attacker, ICharacter defender) {
-        if (attacker.getType() == defender.getType()) {
-            return 1.0f;
-        }
-
-        if (attacker.getType() == CharacterType.LAND && defender.getType() == CharacterType.AIR) {
-            return .8f;
-        }
-
-        if (attacker.getType() == CharacterType.AIR && defender.getType() == CharacterType.LAND) {
-            return 1.2f;
         }
 
         return 1.0f;

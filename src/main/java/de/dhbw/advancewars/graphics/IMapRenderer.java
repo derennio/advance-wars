@@ -39,5 +39,5 @@ public interface IMapRenderer {
 
     void despawnCharacter(ICharacter character);
 
-    void renderGameInfoPopup(IGameController controller);
+    //void renderGameInfoPopup(IGameController controller);
 }

@@ -14,6 +14,8 @@ public class Fighter implements ICharacter {
     private MapTile position;
     private PlayerSide side;
     private int health = 10;
+    private boolean wasMoved = false;
+    private boolean hasAttacked = false;
 
     /**
      * Create a new Fighter character.
@@ -36,16 +38,6 @@ public class Fighter implements ICharacter {
     }
 
     @Override
-    public int getAttackPower() {
-        return 5;
-    }
-
-    @Override
-    public int getDefensePower() {
-        return 3;
-    }
-
-    @Override
     public int getMovementRange() {
         return 9;
     }
@@ -53,6 +45,16 @@ public class Fighter implements ICharacter {
     @Override
     public int getVisionRange() {
         return 2;
+    }
+
+    @Override
+    public boolean wasAlreadyMoved() {
+        return wasMoved;
+    }
+
+    @Override
+    public boolean hasAlreadyAttacked() {
+        return hasAttacked;
     }
 
     @Override

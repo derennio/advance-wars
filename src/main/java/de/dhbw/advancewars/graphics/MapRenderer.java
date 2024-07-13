@@ -12,6 +12,7 @@ import de.dhbw.advancewars.character.land.Infantry;
 import de.dhbw.advancewars.character.land.Mech;
 import de.dhbw.advancewars.character.land.Tank;
 import de.dhbw.advancewars.event.CharacterState;
+import de.dhbw.advancewars.event.DamageUtils;
 import de.dhbw.advancewars.event.IGameController;
 import de.dhbw.advancewars.event.InteractionType;
 import de.dhbw.advancewars.maps.IMapService;
@@ -219,19 +220,19 @@ public class MapRenderer implements IMapRenderer {
         MenuItem attackItem = new MenuItem("Attack");
         attackItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.ATTACK));
 
-        MenuItem waitItem = new MenuItem("Wait");
-        waitItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.WAIT));
+        //MenuItem waitItem = new MenuItem("Wait");
+        //waitItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.WAIT));
 
         MenuItem uniteItem = new MenuItem("Unite");
         uniteItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.UNITE));
 
-        MenuItem infoItem = new MenuItem("Info");
-        infoItem.setOnAction(event -> renderInfoPanel(character, controller));
+        //MenuItem infoItem = new MenuItem("Info");
+        //infoItem.setOnAction(event -> renderInfoPanel(character, controller));
 
         MenuItem endTurnItem = new MenuItem("End Turn");
         endTurnItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.END_TURN));
 
-        contextMenu.getItems().addAll(moveItem, attackItem, waitItem, uniteItem, infoItem, endTurnItem);
+        contextMenu.getItems().addAll(moveItem, attackItem, /*waitItem,*/ uniteItem, /*infoItem,*/ endTurnItem);
 
         contextMenu.setStyle(
                 "-fx-background-color: #ffffff; " +
@@ -261,13 +262,20 @@ public class MapRenderer implements IMapRenderer {
         this.infoPanel.getChildren().add(characterStats);
 
         this.infoPanel.setStyle(
-                        "-fx-text-fill: white; " +
-                        "-fx-font-size: 14px; " +
-                        "-fx-text-color: white; " +
-                        "-fx-border-color: #2f2f2f; " +
-                        "-fx-border-width: 0; " +
-                        "-fx-padding: 5px;");
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 14px; " +
+                "-fx-text-color: white; " +
+                "-fx-border-color: #2f2f2f; " +
+                "-fx-border-width: 0; " +
+                "-fx-padding: 5px;");
 
+        characterStats.setStyle("-fx-text-fill: black; -fx-font-size: 14px;");
+
+        if(controller.getCharacterState() == CharacterState.ATTACKING) {
+            TextArea damageStats = getDamageStats(character, controller);
+            this.infoPanel.getChildren().add(damageStats);
+            damageStats.setStyle("-fx-text-fill: orange; -fx-font-size: 14px;");
+        }
         mapPane.getChildren().add(this.infoPanel);
     }
 
@@ -287,7 +295,9 @@ public class MapRenderer implements IMapRenderer {
             mapPane.getChildren().remove(characterPane);
         }
     }
-
+    
+    
+    /*  This method is not needed at the moment
     @Override
     public void renderGameInfoPopup(IGameController controller)
     {
@@ -313,7 +323,7 @@ public class MapRenderer implements IMapRenderer {
 
         popup.setScene(new javafx.scene.Scene(gameInfo));
         popup.show();
-    }
+    }*/
 
 
     /**
@@ -325,13 +335,11 @@ public class MapRenderer implements IMapRenderer {
     private TextArea getCharacterStats(ICharacter character, IGameController controller) {
         TextArea characterStats = new TextArea();
         characterStats.relocate(0, 0);
-        characterStats.setPrefSize(230, 130);
+        characterStats.setPrefSize(230, 90);
         characterStats.setEditable(false);
         characterStats.setText(
                 "Selected Character: " + character.getClass().getSimpleName() + "\n" +
                 "Health: " + character.getHealth() + "\n" +
-                "Attack Power: " + character.getAttackPower() + "\n" +
-                "Defense Power: " + character.getDefensePower() + "\n" +
                 "Movement Range: " + character.getMovementRange() + "\n" +
                 "Vision Range: " + character.getVisionRange());
 
@@ -340,6 +348,31 @@ public class MapRenderer implements IMapRenderer {
                 "-fx-background-repeat: no-repeat; " +
                 "-fx-background-position: center;");
         return characterStats;
+    }
+
+    /**
+     * Retrieves a text area containing optional damage info if the character is about to be attacked.
+     *
+     * @param controller The game controller.
+     * @return           The text area.
+     */
+    private TextArea getDamageStats(ICharacter character, IGameController controller) {
+        TextArea damageStats = new TextArea();
+        damageStats.relocate(0, 85);
+        damageStats.setPrefSize(230,  70);
+        damageStats.setEditable(false);
+        int estimatedDamage = DamageUtils.calculateDamage(controller.getSelectedCharacter(), character, true);
+        int estimatedCounterDamage = DamageUtils.calculateDamage(character, controller.getSelectedCharacter(), false);
+        damageStats.setText(
+                "Damage: " + estimatedDamage + "\n" +
+                "Health after Attack: " + ((character.getHealth()-estimatedDamage)<0?0:(character.getHealth()-estimatedDamage)) + "\n" +
+                "CounterDamage: " + estimatedCounterDamage);
+
+                damageStats.setStyle("-fx-background-image: url('/assets/textures/medieval.jpg'); " +
+                "-fx-background-size: 200 600; " +
+                "-fx-background-repeat: no-repeat; " +
+                "-fx-background-position: center;");
+        return damageStats;
     }
 
     /**
@@ -377,19 +410,7 @@ public class MapRenderer implements IMapRenderer {
      * @param cPane The pane to focus the character on.
      */
     private void focusCharacter(Pane cPane) {
-        DoubleProperty hue = new SimpleDoubleProperty();
-
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(hue, 0)),
-                new KeyFrame(Duration.seconds(5.0), new KeyValue(hue, 1))
-        );
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
-
-        hue.addListener((observable, oldValue, newValue) -> {
-            Color color = Color.hsb(newValue.doubleValue() * 360, 1, 1);
-            cPane.setBorder(new Border(new BorderStroke(color, BorderStrokeStyle.SOLID, null, new BorderWidths(1.5))));
-        });
+        cPane.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
     }
 
     /**
