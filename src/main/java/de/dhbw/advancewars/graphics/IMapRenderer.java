@@ -33,9 +33,11 @@ public interface IMapRenderer {
 
     void openMenu(ICharacter character, IGameController controller);
 
-    void openMapMenu(MapTile position, IGameController controller);
+    void renderInfoPanel(ICharacter character, IGameController controller);
 
-    void renderInfoPanel(IGameController controller);
+    void removeInfoPanel();
 
     void despawnCharacter(ICharacter character);
+
+    void renderGameInfoPopup(IGameController controller);
 }

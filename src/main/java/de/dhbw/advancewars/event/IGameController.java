@@ -38,20 +38,6 @@ public interface IGameController {
     void handleCharacterClick(ICharacter character, InteractionType interactionType);
 
     /**
-     * Handle the user hovering over a tile.
-     *
-     * @param tile The tile that was hovered over.
-     */
-    void handleTileHover(MapTile tile);
-
-    /**
-     * Handle the user exiting a tile.
-     *
-     * @param tile The tile that was exited.
-     */
-    void handleTileExit(MapTile tile);
-
-    /**
      * Handle the user attempting to move a character.
      *
      * @param character The character to move.
@@ -84,4 +70,8 @@ public interface IGameController {
      * @return The current turn.
      */
     PlayerSide getCurrentTurn();
+
+    void handleHover(ICharacter character);
+
+    void handleEndHover();
 }

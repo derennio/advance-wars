@@ -30,6 +30,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
@@ -105,11 +106,9 @@ public class MapRenderer implements IMapRenderer {
                 tile.setOnMouseClicked(event ->
                     controller.handleTileClick(finalMap.tiles()[finalX][finalY]));
                 tile.setOnMouseEntered(event -> {
-                    controller.handleTileHover(finalMap.tiles()[finalX][finalY]);
                     overlayTiles(new MapTile[]{finalMap.tiles()[finalX][finalY]});
                 });
                 tile.setOnMouseExited(event -> {
-                    controller.handleTileExit(finalMap.tiles()[finalX][finalY]);
                     clearOverlay(new MapTile[]{finalMap.tiles()[finalX][finalY]});
                 });
 
@@ -118,7 +117,7 @@ public class MapRenderer implements IMapRenderer {
         }
 
         // The characters are rendered to the map.
-        for (SpawnDTO spawn : mapSpawnConfiguration.getSpawns()) {
+        for (SpawnDTO spawn : mapSpawnConfiguration.spawns()) {
             ICharacter character = getCharacter(spawn.characterClass(), spawn.playerSide());
             assert character != null;
 
@@ -183,6 +182,10 @@ public class MapRenderer implements IMapRenderer {
             focusCharacter(characterPane);
         });
 
+        // Hover event
+        characterPane.setOnMouseEntered(event -> controller.handleHover(character));
+        characterPane.setOnMouseExited(event -> controller.handleEndHover());
+
         BackgroundImage backgroundImage = new BackgroundImage(
                 new Image(
                         Objects.requireNonNull(getClass().getResource(character.getCharacterAssetPath())).toString(),
@@ -223,7 +226,7 @@ public class MapRenderer implements IMapRenderer {
         uniteItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.UNITE));
 
         MenuItem infoItem = new MenuItem("Info");
-        infoItem.setOnAction(event -> renderInfoPanel(controller));
+        infoItem.setOnAction(event -> renderInfoPanel(character, controller));
 
         MenuItem endTurnItem = new MenuItem("End Turn");
         endTurnItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.END_TURN));
@@ -244,40 +247,17 @@ public class MapRenderer implements IMapRenderer {
     }
 
     @Override
-    public void openMapMenu(MapTile position, IGameController controller) {
-        if (this.contextMenu != null)
-            this.contextMenu.hide();
-
-        ContextMenu contextMenu = new ContextMenu();
-
-        MenuItem infoItem = new MenuItem("Info");
-        infoItem.setOnAction(event -> renderInfoPanel(controller));
-
-        MenuItem endTurnItem = new MenuItem("End Turn");
-        endTurnItem.setOnAction(event -> controller.handleCharacterClick(null, InteractionType.END_TURN));
-
-        contextMenu.getItems().addAll(infoItem, endTurnItem);
-
-        contextMenu.setStyle(
-                "-fx-background-color: #ffffff; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-font-size: 12px; " +
-                        "-fx-text-color: white; " +
-                        "-fx-border-color: #2f2f2f; " +
-                        "-fx-border-width: 0; " +
-                        "-fx-padding: 3px;");
-        showContextMenuForTile(position, contextMenu);
-
-        this.contextMenu = contextMenu;
-    }
-
-    @Override
-    public void renderInfoPanel(IGameController controller) {
+    public void renderInfoPanel(ICharacter character, IGameController controller) {
         this.infoPanel = new Pane();
-        this.infoPanel.setPrefSize(230, 130);
-        this.infoPanel.relocate(600, 300);
 
-        TextArea characterStats = getCharacterStats(controller);
+        MapTile pos = character.getPosition();
+        int x = (pos.x() + 1) * TILE_SIZE;
+        int y = (pos.y() + 1) * TILE_SIZE;
+
+        this.infoPanel.setPrefSize(230, 130);
+        this.infoPanel.relocate(x, y);
+
+        TextArea characterStats = getCharacterStats(character, controller);
         this.infoPanel.getChildren().add(characterStats);
 
         this.infoPanel.setStyle(
@@ -292,6 +272,13 @@ public class MapRenderer implements IMapRenderer {
     }
 
     @Override
+    public void removeInfoPanel()
+    {
+        if (this.infoPanel != null)
+            mapPane.getChildren().remove(this.infoPanel);
+    }
+
+    @Override
     public void despawnCharacter(ICharacter character) {
         assert character != null;
 
@@ -301,6 +288,33 @@ public class MapRenderer implements IMapRenderer {
         }
     }
 
+    @Override
+    public void renderGameInfoPopup(IGameController controller)
+    {
+        Stage popup = new Stage();
+        popup.setTitle("Game Info");
+
+        TextArea gameInfo = new TextArea();
+        gameInfo.relocate(0, 0);
+        gameInfo.setPrefSize(230, 130);
+        gameInfo.setEditable(false);
+
+        gameInfo.setText(
+                "Current turn: " + controller.getCurrentTurn().toString() + "\n" +
+                "Player 1 still has " + AdvanceWars.getCharacters().stream().filter(x -> x.getPlayerSide() == PlayerSide.PLAYER_1).count() + " characters left.\n" +
+                "Player 2 still has " + AdvanceWars.getCharacters().stream().filter(x -> x.getPlayerSide() == PlayerSide.PLAYER_2).count() + " characters left.\n" +
+                "You're playing on " + AdvanceWars.getMap().name()
+        );
+
+        gameInfo.setStyle("-fx-background-image: url('/assets/textures/medieval.jpg'); " +
+                "-fx-background-size: 200 600; " +
+                "-fx-background-repeat: no-repeat; " +
+                "-fx-background-position: center;");
+
+        popup.setScene(new javafx.scene.Scene(gameInfo));
+        popup.show();
+    }
+
 
     /**
      * Retrieves a text area containing all important information for the info panel.
@@ -308,33 +322,18 @@ public class MapRenderer implements IMapRenderer {
      * @param controller The game controller.
      * @return           The text area.
      */
-    private TextArea getCharacterStats(IGameController controller) {
-        if (controller.getSelectedCharacter() == null) {
-            TextArea gameInfo = new TextArea();
-            gameInfo.relocate(0, 0);
-            gameInfo.setPrefSize(230, 130);
-            gameInfo.setEditable(false);
-            gameInfo.setText(
-                            "Current turn: " + controller.getCurrentTurn().toString() + "\n" +
-                            "Player 1 still has " + AdvanceWars.getCharacters().stream().filter(x -> x.getPlayerSide() == PlayerSide.PLAYER_1).count() + " characters left.\n" +
-                            "Player 2 still has " + AdvanceWars.getCharacters().stream().filter(x -> x.getPlayerSide() == PlayerSide.PLAYER_2).count() + " characters left.\n" +
-                                    "You're playing on " + AdvanceWars.getMap().name()
-            );
-
-            return gameInfo;
-        }
-
+    private TextArea getCharacterStats(ICharacter character, IGameController controller) {
         TextArea characterStats = new TextArea();
         characterStats.relocate(0, 0);
         characterStats.setPrefSize(230, 130);
         characterStats.setEditable(false);
         characterStats.setText(
-                "Selected Character: " + controller.getSelectedCharacter().getClass().getSimpleName() + "\n" +
-                "Health: " + controller.getSelectedCharacter().getHealth() + "\n" +
-                "Attack Power: " + controller.getSelectedCharacter().getAttackPower() + "\n" +
-                "Defense Power: " + controller.getSelectedCharacter().getDefensePower() + "\n" +
-                "Movement Range: " + controller.getSelectedCharacter().getMovementRange() + "\n" +
-                "Vision Range: " + controller.getSelectedCharacter().getVisionRange());
+                "Selected Character: " + character.getClass().getSimpleName() + "\n" +
+                "Health: " + character.getHealth() + "\n" +
+                "Attack Power: " + character.getAttackPower() + "\n" +
+                "Defense Power: " + character.getDefensePower() + "\n" +
+                "Movement Range: " + character.getMovementRange() + "\n" +
+                "Vision Range: " + character.getVisionRange());
 
         characterStats.setStyle("-fx-background-image: url('/assets/textures/medieval.jpg'); " +
                 "-fx-background-size: 200 600; " +
