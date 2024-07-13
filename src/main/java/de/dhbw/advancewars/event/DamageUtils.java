@@ -5,6 +5,26 @@ import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.maps.data.TileType;
 
 public class DamageUtils {
+
+    /**
+     * The damage matrix which shows if and how strongly
+     * one character type deals damage to another character type.
+     */
+    private final static int[][] damageMatrix = {
+    //   I  M  T  Ar AA F  B  BC      -> Defender
+        {2, 2, 1, 2, 1, 0, 0, 1}, // Infantry       |
+        {3, 2, 3, 4, 3, 0, 0, 1}, // Mech           |
+        {4, 4, 2, 4, 3, 0, 0, 1}, // Tank           |
+        {5, 5, 4, 4, 3, 0, 0, 0}, // Artillery      |
+        {5, 5, 2, 3, 2, 3, 3, 5}, // AntiAir         > Attacker
+        {0, 0, 0, 0, 0, 3, 5, 5}, // Fighter        |
+        {5, 5, 5, 5, 5, 0, 0, 0}, // Bomber         |
+        {4, 4, 3, 3, 2, 0, 0, 3}, // BattleCopter   |
+    };
+    private final static float attackFactor = 1.5f;
+    private final static float defendFactor = 1.0f;
+
+
     /**
      * Calculate the damage dealt by one character to another.
      *
@@ -13,15 +33,20 @@ public class DamageUtils {
      *
      * @return The damage dealt by characterA to characterB.
      */
-    public static int calculateDamage(ICharacter attacker, ICharacter defender) {
+    public static int calculateDamage(ICharacter attacker, ICharacter defender, boolean isAttack) {
         float terrainMultiplier = getTerrainMultiplier(attacker, defender);
         float characterTypeMultiplier = getCharacterTypeMultiplier(attacker, defender);
-        int damage = (int) (attacker.getAttackPower() * terrainMultiplier * characterTypeMultiplier) - defender.getDefensePower();
-        return Math.max(damage, 1);
+
+        int baseDamage = damageMatrix[attacker.getIndex()][defender.getIndex()];
+        float damage = (baseDamage * (isAttack?attackFactor:defendFactor) * terrainMultiplier * characterTypeMultiplier * (attacker.getHealth()/10f));
+        if (damage < 1 && damage > 0) {
+            damage = 1;
+        }
+        return (int) damage;
     }
 
     /**
-     * Calculate the damage dealt by one character to another.
+     * Calculate the damage multiplier based on the terrain of attacker and defender.
      *
      * @param attacker The character that deals the damage.
      * @param defender The character that receives the damage.

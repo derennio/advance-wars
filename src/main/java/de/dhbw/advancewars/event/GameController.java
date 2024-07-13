@@ -288,15 +288,25 @@ public class GameController implements IGameController {
      * @param defender The character defending.
      */
     private void attackCharacter(ICharacter attacker, ICharacter defender) {
-        int damage = DamageUtils.calculateDamage(attacker, defender);
-        defender.setHealth(defender.getHealth() - damage);
+        int attackerDamage = DamageUtils.calculateDamage(attacker, defender, true);
+        defender.setHealth(defender.getHealth() - attackerDamage);
 
         if (defender.getHealth() <= 0) {
             AdvanceWars.getMapRenderer().despawnCharacter(defender);
             AdvanceWars.getCharacters().remove(defender);
         }
+        else {
+            int defenderDamage = DamageUtils.calculateDamage(defender, attacker, false);
+            attacker.setHealth(attacker.getHealth() - defenderDamage);
 
-        this.selectCharacter(attacker);
+            if (attacker.getHealth() <= 0) {
+                AdvanceWars.getMapRenderer().despawnCharacter(attacker);
+                AdvanceWars.getCharacters().remove(attacker);
+            }
+        }
+        if(defender != null) {
+            this.selectCharacter(defender);
+        }
     }
 
     /**

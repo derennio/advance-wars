@@ -87,6 +87,13 @@ public interface ICharacter {
     UUID getId();
 
     /**
+     * Get the damage matrix of the character.
+     *
+     * @return The damage matrix of the character.
+     */
+    int getIndex();
+
+    /**
      * Damage the character.
      *
      * @param damage The amount of damage to deal.

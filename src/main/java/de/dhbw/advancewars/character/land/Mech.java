@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public class Mech implements ICharacter {
     private final UUID cId;
+    private final int index = 1;
 
     private MapTile position;
     private PlayerSide side;
@@ -90,6 +91,16 @@ public class Mech implements ICharacter {
     @Override
     public UUID getId() {
         return this.cId;
+    }
+
+    /**
+     * Get the damage matrix index of the character.
+     *
+     * @return The damage matrix index of the character.
+     */
+    @Override
+    public int getIndex() {
+        return this.index;
     }
 
     /**
