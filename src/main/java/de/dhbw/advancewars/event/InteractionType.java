@@ -8,5 +8,6 @@ public enum InteractionType {
     MOVE,
     ATTACK,
     WAIT,
-    UNITE
+    UNITE,
+    END_TURN
 }

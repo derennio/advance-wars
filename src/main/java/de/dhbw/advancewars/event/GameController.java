@@ -74,6 +74,11 @@ public class GameController implements IGameController {
      */
     @Override
     public void handleCharacterClick(ICharacter character, InteractionType interactionType) {
+        if (interactionType == InteractionType.END_TURN) {
+            this.takeTurn();
+            return;
+        }
+
         if (this.characterState == CharacterState.ATTACKING) {
             ICharacter selectedCharacter = getSelectedCharacter();
 
@@ -235,6 +240,16 @@ public class GameController implements IGameController {
     }
 
     /**
+     * Get the current turn.
+     *
+     * @return The current turn.
+     */
+    @Override
+    public PlayerSide getCurrentTurn() {
+        return this.currentTurn;
+    }
+
+    /**
      * Calculate the distance between two tiles.
      *
      * @param start Start tile.
@@ -243,19 +258,6 @@ public class GameController implements IGameController {
      */
     private int calculateDistance(MapTile start, MapTile end) {
         return Math.abs(start.x() - end.x()) + Math.abs(start.y() - end.y());
-    }
-
-    /**
-     * Get all characters in vision range of a character.
-     *
-     * @param character The character to get the vision range for.
-     * @return          A list of characters in vision range.
-     */
-    private List<ICharacter> getCharactersInVisionRange(ICharacter character) {
-        return AdvanceWars.getCharacters()
-                .stream()
-                .filter(x -> calculateDistance(character.getPosition(), x.getPosition()) <= character.getVisionRange())
-                .toList();
     }
 
     /**
@@ -276,7 +278,7 @@ public class GameController implements IGameController {
      */
     private void selectCharacter(ICharacter character) {
         this.selectedCharacterId = character.getId();
-        AdvanceWars.getMapRenderer().renderInfoPanel(this);
+        //AdvanceWars.getMapRenderer().renderInfoPanel(this);
     }
 
     /**

@@ -215,17 +215,51 @@ public class MapRenderer implements IMapRenderer {
         MenuItem uniteItem = new MenuItem("Unite");
         uniteItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.UNITE));
 
-        contextMenu.getItems().addAll(moveItem, attackItem, waitItem, uniteItem);
+        MenuItem infoItem = new MenuItem("Info");
+        infoItem.setOnAction(event -> renderInfoPanel(controller));
+
+        MenuItem endTurnItem = new MenuItem("End Turn");
+        endTurnItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.END_TURN));
+
+        contextMenu.getItems().addAll(moveItem, attackItem, waitItem, uniteItem, infoItem, endTurnItem);
 
         contextMenu.setStyle(
                 "-fx-background-color: #ffffff; " +
                         "-fx-text-fill: white; " +
-                        "-fx-font-size: 14px; " +
+                        "-fx-font-size: 12px; " +
                         "-fx-text-color: white; " +
                         "-fx-border-color: #2f2f2f; " +
                         "-fx-border-width: 0; " +
-                        "-fx-padding: 5px;");
+                        "-fx-padding: 3px;");
         showContextMenuForTile(tile, contextMenu);
+
+        this.contextMenu = contextMenu;
+    }
+
+    @Override
+    public void openMapMenu(MapTile position, IGameController controller) {
+        if (this.contextMenu != null)
+            this.contextMenu.hide();
+
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem infoItem = new MenuItem("Info");
+        infoItem.setOnAction(event -> renderInfoPanel(controller));
+
+        MenuItem endTurnItem = new MenuItem("End Turn");
+        endTurnItem.setOnAction(event -> controller.handleCharacterClick(null, InteractionType.END_TURN));
+
+        contextMenu.getItems().addAll(infoItem, endTurnItem);
+
+        contextMenu.setStyle(
+                "-fx-background-color: #ffffff; " +
+                        "-fx-text-fill: white; " +
+                        "-fx-font-size: 12px; " +
+                        "-fx-text-color: white; " +
+                        "-fx-border-color: #2f2f2f; " +
+                        "-fx-border-width: 0; " +
+                        "-fx-padding: 3px;");
+        showContextMenuForTile(position, contextMenu);
 
         this.contextMenu = contextMenu;
     }
@@ -268,8 +302,20 @@ public class MapRenderer implements IMapRenderer {
      * @return           The text area.
      */
     private TextArea getCharacterStats(IGameController controller) {
-        if (controller.getSelectedCharacter() == null)
-            return new TextArea();
+        if (controller.getSelectedCharacter() == null) {
+            TextArea gameInfo = new TextArea();
+            gameInfo.relocate(0, 0);
+            gameInfo.setPrefSize(230, 130);
+            gameInfo.setEditable(false);
+            gameInfo.setText(
+                            "Current turn: " + controller.getCurrentTurn().toString() + "\n" +
+                            "Player 1 still has " + AdvanceWars.getCharacters().stream().filter(x -> x.getPlayerSide() == PlayerSide.PLAYER_1).count() + " characters left.\n" +
+                            "Player 2 still has " + AdvanceWars.getCharacters().stream().filter(x -> x.getPlayerSide() == PlayerSide.PLAYER_2).count() + " characters left.\n" +
+                                    "You're playing on " + AdvanceWars.getMap().name()
+            );
+
+            return gameInfo;
+        }
 
         TextArea characterStats = new TextArea();
         characterStats.relocate(0, 0);
@@ -364,5 +410,4 @@ public class MapRenderer implements IMapRenderer {
 
         contextMenu.show(mapPane, screenPoint.getX(), screenPoint.getY());
     }
-
 }

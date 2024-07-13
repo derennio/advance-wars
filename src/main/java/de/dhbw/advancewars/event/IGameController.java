@@ -2,6 +2,7 @@ package de.dhbw.advancewars.event;
 
 import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.maps.data.MapTile;
+import de.dhbw.advancewars.player.PlayerSide;
 
 /**
  * A controller for events surrounding and regarding a game/match.
@@ -70,5 +71,17 @@ public interface IGameController {
      */
     ICharacter getSelectedCharacter();
 
+    /**
+     * Get the current state of the character.
+     *
+     * @return The current state of the character.
+     */
     CharacterState getCharacterState();
+
+    /**
+     * Get the current turn.
+     *
+     * @return The current turn.
+     */
+    PlayerSide getCurrentTurn();
 }
