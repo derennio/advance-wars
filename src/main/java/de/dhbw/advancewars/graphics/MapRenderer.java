@@ -3,7 +3,14 @@ package de.dhbw.advancewars.graphics;
 import de.dhbw.advancewars.AdvanceWars;
 import de.dhbw.advancewars.character.CharacterClass;
 import de.dhbw.advancewars.character.ICharacter;
+import de.dhbw.advancewars.character.air.BattleCopter;
+import de.dhbw.advancewars.character.air.Bomber;
+import de.dhbw.advancewars.character.air.Fighter;
+import de.dhbw.advancewars.character.land.AntiAir;
+import de.dhbw.advancewars.character.land.Artillery;
 import de.dhbw.advancewars.character.land.Infantry;
+import de.dhbw.advancewars.character.land.Mech;
+import de.dhbw.advancewars.character.land.Tank;
 import de.dhbw.advancewars.event.CharacterState;
 import de.dhbw.advancewars.event.IGameController;
 import de.dhbw.advancewars.event.InteractionType;
@@ -357,13 +364,13 @@ public class MapRenderer implements IMapRenderer {
     private ICharacter getCharacter(CharacterClass characterClass, PlayerSide playerSide) {
         return switch (characterClass) {
             case INFANTRY -> new Infantry(playerSide);
-            case MECH -> null;
-            case TANK -> null;
-            case ARTILLERY -> null;
-            case ANTI_AIR -> null;
-            case FIGHTER -> null;
-            case BOMBER -> null;
-            case BATTLE_COPTER -> null;
+            case MECH -> new Mech(playerSide);
+            case TANK -> new Tank(playerSide);
+            case ARTILLERY -> new Artillery(playerSide);
+            case ANTI_AIR -> new AntiAir(playerSide);
+            case FIGHTER -> new Fighter(playerSide);
+            case BOMBER -> new Bomber(playerSide);
+            case BATTLE_COPTER -> new BattleCopter(playerSide);
         };
     }
 
