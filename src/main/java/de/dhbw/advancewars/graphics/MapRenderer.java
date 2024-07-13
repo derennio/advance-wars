@@ -4,6 +4,7 @@ import de.dhbw.advancewars.AdvanceWars;
 import de.dhbw.advancewars.character.CharacterClass;
 import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.character.land.Infantry;
+import de.dhbw.advancewars.event.CharacterState;
 import de.dhbw.advancewars.event.IGameController;
 import de.dhbw.advancewars.event.InteractionType;
 import de.dhbw.advancewars.maps.IMapService;
@@ -131,7 +132,7 @@ public class MapRenderer implements IMapRenderer {
             overlay.relocate(tile.x() * TILE_SIZE, tile.y() * TILE_SIZE);
 
             Color color = Color.rgb(0, 0, 0, 0.3);
-            if (AdvanceWars.getGameController().characterSelected()) {
+            if (AdvanceWars.getGameController().characterSelected() && AdvanceWars.getGameController().getCharacterState() == CharacterState.MOVING) {
                 if (AdvanceWars.getGameController().canMoveCharacter(AdvanceWars.getGameController().getSelectedCharacter(), tile)) {
                     color = Color.rgb(0, 89, 79, 0.45);
                 } else {
@@ -214,7 +215,7 @@ public class MapRenderer implements IMapRenderer {
         MenuItem uniteItem = new MenuItem("Unite");
         uniteItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.UNITE));
 
-        contextMenu.getItems().addAll(moveItem, attackItem, waitItem);
+        contextMenu.getItems().addAll(moveItem, attackItem, waitItem, uniteItem);
 
         contextMenu.setStyle(
                 "-fx-background-color: #ffffff; " +
@@ -249,6 +250,16 @@ public class MapRenderer implements IMapRenderer {
         mapPane.getChildren().add(this.infoPanel);
     }
 
+    @Override
+    public void despawnCharacter(ICharacter character) {
+        assert character != null;
+
+        Pane characterPane = (Pane) mapPane.lookup("#c" + character.getId());
+        if (characterPane != null) {
+            mapPane.getChildren().remove(characterPane);
+        }
+    }
+
 
     /**
      * Retrieves a text area containing all important information for the info panel.
@@ -257,6 +268,9 @@ public class MapRenderer implements IMapRenderer {
      * @return           The text area.
      */
     private TextArea getCharacterStats(IGameController controller) {
+        if (controller.getSelectedCharacter() == null)
+            return new TextArea();
+
         TextArea characterStats = new TextArea();
         characterStats.relocate(0, 0);
         characterStats.setPrefSize(230, 130);

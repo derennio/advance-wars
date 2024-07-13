@@ -12,7 +12,7 @@ public class Infantry implements ICharacter {
 
     private MapTile position;
     private PlayerSide side;
-    private double health = 10;
+    private int health = 10;
 
     /**
      * Create a new Infantry character.
@@ -36,7 +36,7 @@ public class Infantry implements ICharacter {
 
     @Override
     public int getAttackPower() {
-        return 1;
+        return 4;
     }
 
     @Override
@@ -46,12 +46,12 @@ public class Infantry implements ICharacter {
 
     @Override
     public int getMovementRange() {
-        return 3;
+        return 30;
     }
 
     @Override
     public int getVisionRange() {
-        return 2;
+        return 20;
     }
 
     @Override
@@ -100,6 +100,16 @@ public class Infantry implements ICharacter {
     @Override
     public void damage(int damage) {
         this.health -= damage;
+    }
+
+    /**
+     * Set the health of the character.
+     *
+     * @param health The health of the character.
+     */
+    @Override
+    public void setHealth(int health) {
+        this.health = health;
     }
 
     @Override

@@ -50,20 +50,11 @@ public class GameController implements IGameController {
     public void handleTileClick(MapTile tile) {
         System.out.println("Clicked on tile " + tile);
         if (this.characterState == CharacterState.MOVING) {
-            boolean characterExists = AdvanceWars.getCharacters()
-                    .stream()
-                    .anyMatch(x -> x.getId() == selectedCharacterId);
+            ICharacter selectedCharacter = getSelectedCharacter();
 
-            if (!characterExists) {
-                this.characterState = CharacterState.IDLE;
+            if (selectedCharacter == null) {
                 return;
             }
-
-            ICharacter selectedCharacter = AdvanceWars.getCharacters()
-                    .stream()
-                    .filter(x -> x.getId() == selectedCharacterId)
-                    .findFirst()
-                    .get();
 
             if (this.canMoveCharacter(selectedCharacter, tile)) {
                 selectedCharacter.setPosition(tile);
@@ -83,25 +74,41 @@ public class GameController implements IGameController {
      */
     @Override
     public void handleCharacterClick(ICharacter character, InteractionType interactionType) {
+        if (this.characterState == CharacterState.ATTACKING) {
+            ICharacter selectedCharacter = getSelectedCharacter();
+
+            if (selectedCharacter == null) {
+                return;
+            }
+
+            if (calculateDistance(selectedCharacter.getPosition(), character.getPosition()) > selectedCharacter.getVisionRange()) {
+                return;
+            }
+
+            if (selectedCharacter.getPlayerSide() == character.getPlayerSide()) {
+                return;
+            }
+
+            if (selectedCharacter.getPosition() == character.getPosition()) {
+                return;
+            }
+
+            attackCharacter(selectedCharacter, character);
+
+            this.characterState = CharacterState.IDLE;
+            return;
+        }
+
         if (this.currentTurn != character.getPlayerSide()) {
             return;
         }
 
         if (this.characterState == CharacterState.MERGING) {
-            boolean characterExists = AdvanceWars.getCharacters()
-                    .stream()
-                    .anyMatch(x -> x.getId() == selectedCharacterId);
+            ICharacter selectedCharacter = getSelectedCharacter();
 
-            if (!characterExists) {
-                this.characterState = CharacterState.IDLE;
+            if (selectedCharacter == null) {
                 return;
             }
-
-            ICharacter selectedCharacter = AdvanceWars.getCharacters()
-                    .stream()
-                    .filter(x -> x.getId() == selectedCharacterId)
-                    .findFirst()
-                    .get();
 
             if (selectedCharacter.getPlayerSide() != character.getPlayerSide()) {
                 return;
@@ -111,15 +118,14 @@ public class GameController implements IGameController {
                 return;
             }
 
-            if (selectedCharacter.getPosition() != character.getPosition()) {
+            if (selectedCharacter.getPosition() == character.getPosition()) {
                 return;
             }
 
-            // selectedCharacter.merge(character);
+            mergeCharacter(selectedCharacter, character);
 
-            AdvanceWars.getCharacters().remove(character);
             this.characterState = CharacterState.IDLE;
-            this.takeTurn();
+            return;
         }
 
         if (interactionType == InteractionType.P0) {
@@ -135,15 +141,6 @@ public class GameController implements IGameController {
 
         if (interactionType == InteractionType.ATTACK) {
             this.characterState = CharacterState.ATTACKING;
-
-            List<ICharacter> enemiesInVision = getCharactersInVisionRange(character)
-                    .stream()
-                    .filter(c -> c.getPlayerSide() != character.getPlayerSide())
-                    .toList();
-            for (ICharacter c : enemiesInVision) {
-                /// TODO: Implement attack logic
-            }
-            this.takeTurn();
         }
 
         if (interactionType == InteractionType.MOVE) {
@@ -182,6 +179,10 @@ public class GameController implements IGameController {
      */
     @Override
     public boolean canMoveCharacter(ICharacter character, MapTile targetTile) {
+        if (character == null) {
+            return false;
+        }
+
         if (targetTile.type() == TileType.SEA && character.getType() != CharacterType.AIR) {
             return false;
         }
@@ -209,14 +210,28 @@ public class GameController implements IGameController {
         if (this.characterSelected()) {
             assert selectedCharacterId != null;
 
+            boolean characterExists = AdvanceWars.getCharacters()
+                    .stream()
+                    .anyMatch(x -> x.getId() == selectedCharacterId);
+
+            if (!characterExists) {
+                this.characterState = CharacterState.IDLE;
+                return null;
+            }
+
             return AdvanceWars.getCharacters()
                     .stream()
                     .filter(x -> x.getId() == selectedCharacterId)
                     .findFirst()
-                    .get();
+                    .orElseThrow();
         }
 
         return null;
+    }
+
+    @Override
+    public CharacterState getCharacterState() {
+        return this.characterState;
     }
 
     /**
@@ -271,21 +286,30 @@ public class GameController implements IGameController {
      * @param defender The character defending.
      */
     private void attackCharacter(ICharacter attacker, ICharacter defender) {
-        /// TODO: only prototyped, to be finished...
-        int damage = attacker.getAttackPower() - defender.getDefensePower();
-        if (damage < 0) {
-            damage = 0;
-        }
-
-        defender.damage(damage);
+        int damage = DamageUtils.calculateDamage(attacker, defender);
+        defender.setHealth(defender.getHealth() - damage);
 
         if (defender.getHealth() <= 0) {
+            AdvanceWars.getMapRenderer().despawnCharacter(defender);
             AdvanceWars.getCharacters().remove(defender);
         }
+
+        this.selectCharacter(attacker);
     }
 
+    /**
+     * Merge two characters.
+     *
+     * @param character1 The first character.
+     * @param character2 The second character.
+     */
     private void mergeCharacter(ICharacter character1, ICharacter character2) {
-        double health = Math.min(character1.getHealth() + character2.getHealth(), 10);
+        int health = Math.min(character1.getHealth() + character2.getHealth(), 10);
         character1.setHealth(health);
+        AdvanceWars.getMapRenderer().despawnCharacter(character2);
+        AdvanceWars.getCharacters().remove(character2);
+
+        this.selectCharacter(character1);
+
     }
 }

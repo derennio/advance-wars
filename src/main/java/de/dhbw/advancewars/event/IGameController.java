@@ -69,4 +69,6 @@ public interface IGameController {
      * Returns the currently selected character
      */
     ICharacter getSelectedCharacter();
+
+    CharacterState getCharacterState();
 }
