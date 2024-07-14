@@ -361,11 +361,11 @@ public class MapRenderer implements IMapRenderer {
 
         if (AdvanceWars.getCharacters().stream().noneMatch(x -> x.getPlayerSide() == controller.getCurrentTurn())) {
             Text winnerText = (Text) statusBar.lookup("#winnerText");
-            winnerText.setText("Player " + controller.getCurrentTurn() + " has won!");
+            winnerText.setText(controller.getCurrentTurn() + " has won!");
         } else if (AdvanceWars.getCharacters().stream().noneMatch(x -> x.getPlayerSide() != controller.getCurrentTurn())) {
             Text winnerText = (Text) statusBar.lookup("#winnerText");
-            PlayerSide winner = controller.getCurrentTurn() == PlayerSide.PLAYER_1 ? PlayerSide.PLAYER_2 : PlayerSide.PLAYER_1;
-            winnerText.setText("Player " + winner + " has won!");
+            PlayerSide winner = controller.getCurrentTurn() == PlayerSide.PLAYER_1 ? PlayerSide.PLAYER_1 : PlayerSide.PLAYER_2;
+            winnerText.setText(winner + " has won!");
         }
     }
 

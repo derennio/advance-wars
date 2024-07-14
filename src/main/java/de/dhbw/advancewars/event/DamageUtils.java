@@ -57,7 +57,16 @@ public class DamageUtils {
         TileType defenderTileType = defender.getPosition().type();
 
         if (attacker.getType() == CharacterType.AIR) {
-            return 1.0f;
+            switch (defenderTileType) {
+                case PLAIN:
+                    return 1.0f;
+                case WOOD:
+                    return 0.7f;
+                case MOUNTAIN:
+                    return 0.9f;
+                case SEA:
+                    return 1.0f;
+            }
         }
 
         switch (attackerTileType) {
