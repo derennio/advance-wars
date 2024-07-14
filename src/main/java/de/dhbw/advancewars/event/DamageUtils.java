@@ -1,5 +1,6 @@
 package de.dhbw.advancewars.event;
 
+import de.dhbw.advancewars.character.CharacterType;
 import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.maps.data.TileType;
 
@@ -54,6 +55,10 @@ public class DamageUtils {
     private static float getTerrainMultiplier(ICharacter attacker, ICharacter defender) {
         TileType attackerTileType = attacker.getPosition().type();
         TileType defenderTileType = defender.getPosition().type();
+
+        if (attacker.getType() == CharacterType.AIR) {
+            return 1.0f;
+        }
 
         switch (attackerTileType) {
             case PLAIN:
