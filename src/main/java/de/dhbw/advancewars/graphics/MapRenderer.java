@@ -244,8 +244,15 @@ public class MapRenderer implements IMapRenderer {
             contextMenu.getItems().add(moveItem);
         }
 
-        if (!controller.characterAttackLimitReached(character)) {
-            contextMenu.getItems().add(attackItem);
+        for(ICharacter c : AdvanceWars.getCharacters()) {
+            if (controller.calculateDistance(character.getPosition(), c.getPosition()) <= character.getVisionRange()){
+                if (character.getPlayerSide() != c.getPlayerSide()) {
+                    if (!controller.characterAttackLimitReached(character)) {
+                        contextMenu.getItems().add(attackItem);
+                        break;
+                    }
+                }
+            }
         }
 
         contextMenu.getItems().addAll(uniteItem, endTurnItem);
@@ -289,11 +296,15 @@ public class MapRenderer implements IMapRenderer {
                 "-fx-padding: 5px;");
 
         characterStats.setStyle("-fx-text-fill: black; -fx-font-size: 14px;");
-
+        ICharacter selectedCharacter = controller.getSelectedCharacter();
         if(controller.getCharacterState() == CharacterState.ATTACKING) {
-            TextArea damageStats = getDamageStats(character, controller);
-            this.infoPanel.getChildren().add(damageStats);
-            damageStats.setStyle("-fx-text-fill: orange; -fx-font-size: 14px;");
+            if (controller.calculateDistance(selectedCharacter.getPosition(), character.getPosition()) <= selectedCharacter.getVisionRange()){
+                if (selectedCharacter.getPlayerSide() != character.getPlayerSide()) {
+                    TextArea damageStats = getDamageStats(character, controller);
+                    this.infoPanel.getChildren().add(damageStats);
+                    damageStats.setStyle("-fx-text-fill: orange; -fx-font-size: 14px;");
+                }
+            }
         }
         mapPane.getChildren().add(this.infoPanel);
     }
@@ -379,18 +390,27 @@ public class MapRenderer implements IMapRenderer {
     private TextArea getDamageStats(ICharacter character, IGameController controller) {
         TextArea damageStats = new TextArea();
         damageStats.relocate(0, 85);
-        damageStats.setPrefSize(230,  70);
+        damageStats.setPrefSize(230,  85);
         damageStats.setEditable(false);
         int estimatedDamage = DamageUtils.calculateDamage(controller.getSelectedCharacter(), character, true);
+        int enemyHealth = character.getHealth();
+        int estimatedEnemyHealth = Math.max((enemyHealth - estimatedDamage), 0);
+        character.setHealth(estimatedEnemyHealth);
         int estimatedCounterDamage = DamageUtils.calculateDamage(character, controller.getSelectedCharacter(), false);
         damageStats.setText(
-                "Damage: " + estimatedDamage + "\n" +
-                "Health after Attack: " + Math.max((character.getHealth() - estimatedDamage), 0) + "\n" +
-                "CounterDamage: " + estimatedCounterDamage);
+                "Damage: " + Math.min(estimatedDamage, 10) + "\n" +
+                "Enemies Health after Attack: " + estimatedEnemyHealth + "\n" +
+                "CounterDamage: " + Math.min(estimatedCounterDamage, 10) + "\n" +
+                "Your Health after Attack: " + Math.max((controller.getSelectedCharacter().getHealth() - estimatedCounterDamage), 0));
 
                 damageStats.setStyle("-fx-background-size: 200 600; " +
                 "-fx-background-repeat: no-repeat; " +
                 "-fx-background-position: center;");
+
+        
+        character.setHealth(enemyHealth);
+
+        
         return damageStats;
     }
 

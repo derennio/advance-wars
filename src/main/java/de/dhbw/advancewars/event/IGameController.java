@@ -98,4 +98,13 @@ public interface IGameController {
      * @param key The key that was pressed.
      */
     void handleKeyPress(KeyCode key);
+
+    /**
+     * Calculate the distance between two tiles.
+     *
+     * @param start Start tile.
+     * @param end   End tile.
+     * @return      The distance between the two tiles.
+     */
+    int calculateDistance(MapTile start, MapTile end);
 }

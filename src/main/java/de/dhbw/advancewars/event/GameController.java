@@ -288,7 +288,7 @@ public class GameController implements IGameController {
      * @param end   End tile.
      * @return      The distance between the two tiles.
      */
-    private int calculateDistance(MapTile start, MapTile end) {
+    public int calculateDistance(MapTile start, MapTile end) {
         return Math.abs(start.x() - end.x()) + Math.abs(start.y() - end.y());
     }
 
