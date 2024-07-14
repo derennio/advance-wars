@@ -7,7 +7,9 @@ import de.dhbw.advancewars.graphics.MapPane;
 import de.dhbw.advancewars.maps.data.MapTile;
 import de.dhbw.advancewars.maps.data.TileType;
 import de.dhbw.advancewars.player.PlayerSide;
+import javafx.scene.input.KeyCode;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,8 +28,8 @@ public class GameController implements IGameController {
     private UUID selectedCharacterId;
     private PlayerSide currentTurn = PlayerSide.PLAYER_1;
 
-    private List<ICharacter> hasMoved = List.of();
-    private List<ICharacter> hasAttacked = List.of();
+    private List<ICharacter> hasMoved = new ArrayList<>();
+    private List<ICharacter> hasAttacked = new ArrayList<>();
 
     /**
      * @param mapName The name of the map to set.
@@ -51,7 +53,6 @@ public class GameController implements IGameController {
     @Override
     public void handleTileClick(MapTile tile) {
         System.out.println("Clicked on tile " + tile);
-        //AdvanceWars.getMapRenderer().renderGameInfoPopup(this);
         if (this.characterState == CharacterState.MOVING) {
             ICharacter selectedCharacter = getSelectedCharacter();
 
@@ -66,10 +67,9 @@ public class GameController implements IGameController {
 
                 // Game logic handling
                 this.characterState = CharacterState.IDLE;
-                this.handleCharacterClick(selectedCharacter, InteractionType.MOVE);
+                this.handleLimitedCharacterAction(selectedCharacter, InteractionType.MOVE);
             }
         }
-
     }
 
     /**
@@ -90,6 +90,10 @@ public class GameController implements IGameController {
             ICharacter selectedCharacter = getSelectedCharacter();
 
             if (selectedCharacter == null) {
+                return;
+            }
+
+            if (this.hasAttacked.contains(selectedCharacter)) {
                 return;
             }
 
@@ -177,7 +181,7 @@ public class GameController implements IGameController {
             return false;
         }
 
-        if (this.hasMoved.contains(character)) {
+        if (this.characterMovesLimitReached(character) || this.characterAttackLimitReached(character)) {
             return false;
         }
 
@@ -256,6 +260,27 @@ public class GameController implements IGameController {
         AdvanceWars.getMapRenderer().removeInfoPanel();
     }
 
+    @Override
+    public boolean characterMovesLimitReached(ICharacter character)
+    {
+        return this.hasMoved.contains(character);
+    }
+
+    @Override
+    public boolean characterAttackLimitReached(ICharacter character)
+    {
+        return this.hasAttacked.contains(character);
+    }
+
+    @Override
+    public void handleKeyPress(KeyCode key)
+    {
+        if (key == KeyCode.ESCAPE) {
+            this.characterState = CharacterState.IDLE;
+            AdvanceWars.getMapRenderer().removeInfoPanel();
+        }
+    }
+
     /**
      * Calculate the distance between two tiles.
      *
@@ -279,6 +304,7 @@ public class GameController implements IGameController {
 
         this.hasAttacked.clear();
         this.hasMoved.clear();
+        AdvanceWars.getMapRenderer().updateStatusBar(this);
     }
 
     /**
@@ -306,6 +332,7 @@ public class GameController implements IGameController {
         if (defender.getHealth() <= 0) {
             AdvanceWars.getMapRenderer().despawnCharacter(defender);
             AdvanceWars.getCharacters().remove(defender);
+            AdvanceWars.getMapRenderer().updateStatusBar(this);
         }
         else {
             int defenderDamage = DamageUtils.calculateDamage(defender, attacker, false);
@@ -314,8 +341,10 @@ public class GameController implements IGameController {
             if (attacker.getHealth() <= 0) {
                 AdvanceWars.getMapRenderer().despawnCharacter(attacker);
                 AdvanceWars.getCharacters().remove(attacker);
+                AdvanceWars.getMapRenderer().updateStatusBar(this);
             }
         }
+
         if(defender != null) {
             this.selectCharacter(defender);
         }
@@ -332,6 +361,7 @@ public class GameController implements IGameController {
         character1.setHealth(health);
         AdvanceWars.getMapRenderer().despawnCharacter(character2);
         AdvanceWars.getCharacters().remove(character2);
+        AdvanceWars.getMapRenderer().updateStatusBar(this);
 
         this.selectCharacter(character1);
 

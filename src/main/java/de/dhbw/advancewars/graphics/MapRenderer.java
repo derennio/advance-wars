@@ -29,8 +29,10 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.Pair;
@@ -46,7 +48,7 @@ public class MapRenderer implements IMapRenderer {
     private final IMapService mapService;
     private MapPane mapPane;
     private ContextMenu contextMenu;
-    private Pane infoPanel;
+    private Pane infoPanel, statusBar;
 
     public MapRenderer(IMapService mapService) {
         this.mapService = mapService;
@@ -75,7 +77,16 @@ public class MapRenderer implements IMapRenderer {
         }
 
         // The target pane is resized to fit the map.
-        target.setPrefSize(map.width() * TILE_SIZE, map.height() * TILE_SIZE);
+        target.setPrefSize(map.width() * TILE_SIZE, (map.height() + 1) * TILE_SIZE);
+        target.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                ICharacter selectedCharacter = controller.getSelectedCharacter();
+                if (selectedCharacter != null) {
+                    unFocusCharacter((Pane) mapPane.lookup("#c" + selectedCharacter.getId()));
+                }
+            }
+            controller.handleKeyPress(event.getCode());
+        });
 
         // The map is rendered by iterating over all tiles and rendering them to the target pane.
         for (int x = 0; x < map.width(); x++) {
@@ -129,6 +140,8 @@ public class MapRenderer implements IMapRenderer {
             renderCharacter(spawnPosition, character, controller);
             AdvanceWars.addCharacter(character);
         }
+
+        this.renderStatusBar(target, map.width(), map.height(), controller);
     }
 
     @Override
@@ -227,7 +240,15 @@ public class MapRenderer implements IMapRenderer {
         MenuItem endTurnItem = new MenuItem("End Turn");
         endTurnItem.setOnAction(event -> controller.handleCharacterClick(character, InteractionType.END_TURN));
 
-        contextMenu.getItems().addAll(moveItem, attackItem, /*waitItem,*/ uniteItem, /*infoItem,*/ endTurnItem);
+        if (!controller.characterMovesLimitReached(character)) {
+            contextMenu.getItems().add(moveItem);
+        }
+
+        if (!controller.characterAttackLimitReached(character)) {
+            contextMenu.getItems().add(attackItem);
+        }
+
+        contextMenu.getItems().addAll(uniteItem, endTurnItem);
 
         contextMenu.setStyle(
                 "-fx-background-color: #ffffff; " +
@@ -294,6 +315,38 @@ public class MapRenderer implements IMapRenderer {
         }
     }
 
+    @Override
+    public void updateStatusBar(IGameController controller)
+    {
+        Text currentTurnText = (Text) statusBar.lookup("#currentTurnText");
+        currentTurnText.setText("Current turn: " + controller.getCurrentTurn());
+
+        Text unitsRemainingText = (Text) statusBar.lookup("#unitsRemainingText");
+        unitsRemainingText.setText("Units remaining: " +
+                AdvanceWars
+                        .getCharacters()
+                        .stream()
+                        .filter(x -> x.getPlayerSide() == controller.getCurrentTurn())
+                        .count());
+
+        Text enemyUnitsRemainingText = (Text) statusBar.lookup("#enemyUnitsRemainingText");
+        enemyUnitsRemainingText.setText("Enemy units remaining: " +
+                AdvanceWars
+                        .getCharacters()
+                        .stream()
+                        .filter(x -> x.getPlayerSide() != controller.getCurrentTurn())
+                        .count());
+
+        if (AdvanceWars.getCharacters().stream().noneMatch(x -> x.getPlayerSide() == controller.getCurrentTurn())) {
+            Text winnerText = (Text) statusBar.lookup("#winnerText");
+            winnerText.setText("Player " + controller.getCurrentTurn() + " has won!");
+        } else if (AdvanceWars.getCharacters().stream().noneMatch(x -> x.getPlayerSide() != controller.getCurrentTurn())) {
+            Text winnerText = (Text) statusBar.lookup("#winnerText");
+            PlayerSide winner = controller.getCurrentTurn() == PlayerSide.PLAYER_1 ? PlayerSide.PLAYER_2 : PlayerSide.PLAYER_1;
+            winnerText.setText("Player " + winner + " has won!");
+        }
+    }
+
     /**
      * Retrieves a text area containing all important information for the info panel.
      *
@@ -311,8 +364,7 @@ public class MapRenderer implements IMapRenderer {
                 "Movement Range: " + character.getMovementRange() + "\n" +
                 "Vision Range: " + character.getVisionRange());
 
-        characterStats.setStyle("-fx-background-image: url('/assets/textures/medieval.jpg'); " +
-                "-fx-background-size: 200 600; " +
+        characterStats.setStyle("-fx-background-size: 200 600; " +
                 "-fx-background-repeat: no-repeat; " +
                 "-fx-background-position: center;");
         return characterStats;
@@ -333,11 +385,10 @@ public class MapRenderer implements IMapRenderer {
         int estimatedCounterDamage = DamageUtils.calculateDamage(character, controller.getSelectedCharacter(), false);
         damageStats.setText(
                 "Damage: " + estimatedDamage + "\n" +
-                "Health after Attack: " + ((character.getHealth()-estimatedDamage)<0?0:(character.getHealth()-estimatedDamage)) + "\n" +
+                "Health after Attack: " + Math.max((character.getHealth() - estimatedDamage), 0) + "\n" +
                 "CounterDamage: " + estimatedCounterDamage);
 
-                damageStats.setStyle("-fx-background-image: url('/assets/textures/medieval.jpg'); " +
-                "-fx-background-size: 200 600; " +
+                damageStats.setStyle("-fx-background-size: 200 600; " +
                 "-fx-background-repeat: no-repeat; " +
                 "-fx-background-position: center;");
         return damageStats;
@@ -441,4 +492,70 @@ public class MapRenderer implements IMapRenderer {
         }
     }
 
+    /**
+     * Renders the status bar at the bottom of the screen.
+     *
+     * @param target     The target pane to render the status bar to.
+     * @param width      The width of the map.
+     * @param height     The height of the map.
+     * @param controller The game controller to use for handling the map.
+     */
+    private void renderStatusBar(Pane target, int width, int height, IGameController controller) {
+        this.statusBar = new Pane();
+        this.statusBar.setPrefSize(width * TILE_SIZE, TILE_SIZE);
+        this.statusBar.relocate(0, height * TILE_SIZE);
+        this.statusBar.setStyle("-fx-background-color: #a33b0b;");
+
+        Text mapText = new Text("You're playing on: " + controller.getMapName());
+        mapText.setFill(Color.WHITE);
+        mapText.setStyle("-fx-font-size: 16px;");
+        mapText.relocate(10, 3);
+        this.statusBar.getChildren().add(mapText);
+
+        Text currentTurnText = new Text("Current turn: " + controller.getCurrentTurn());
+        currentTurnText.setFill(Color.WHITE);
+        currentTurnText.setStyle("-fx-font-size: 16px;");
+        currentTurnText.relocate(10, 20);
+        currentTurnText.setId("currentTurnText");
+        this.statusBar.getChildren().add(currentTurnText);
+
+        Text unitsRemainingText = new Text("Units remaining: " +
+                AdvanceWars
+                        .getCharacters()
+                        .stream()
+                        .filter(x -> x.getPlayerSide() == controller.getCurrentTurn())
+                        .count());
+        unitsRemainingText.setFill(Color.WHITE);
+        unitsRemainingText.setStyle("-fx-font-size: 16px;");
+        unitsRemainingText.relocate(250, 3);
+        unitsRemainingText.setId("unitsRemainingText");
+        this.statusBar.getChildren().add(unitsRemainingText);
+
+        Text enemyUnitsRemainingText = new Text("Enemy units remaining: " +
+                AdvanceWars
+                        .getCharacters()
+                        .stream()
+                        .filter(x -> x.getPlayerSide() != controller.getCurrentTurn())
+                        .count());
+        enemyUnitsRemainingText.setFill(Color.WHITE);
+        enemyUnitsRemainingText.setStyle("-fx-font-size: 16px;");
+        enemyUnitsRemainingText.relocate(250, 20);
+        enemyUnitsRemainingText.setId("enemyUnitsRemainingText");
+        this.statusBar.getChildren().add(enemyUnitsRemainingText);
+
+        Text winnerText = new Text("");
+        winnerText.setFill(Color.WHITE);
+        winnerText.setStyle("-fx-font-size: 16px;");
+        winnerText.relocate(450, 3);
+        winnerText.setId("winnerText");
+        this.statusBar.getChildren().add(winnerText);
+
+        Text escapeText = new Text("Press ESC to deselect character");
+        escapeText.setFill(Color.WHITE);
+        escapeText.setStyle("-fx-font-size: 16px;");
+        escapeText.relocate(450, 20);
+        this.statusBar.getChildren().add(escapeText);
+
+        target.getChildren().add(this.statusBar);
+    }
 }

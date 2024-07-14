@@ -24,6 +24,7 @@ public class AdvanceWars extends Application {
     private static IMapRenderer mapRenderer;
     private static MapDTO map;
     private static List<ICharacter> characters;
+    private static Stage mstage;
 
     /**
      * Starts the FX app and initializes required services.
@@ -33,24 +34,37 @@ public class AdvanceWars extends Application {
      */
     @Override
     public void start(Stage stage) throws IOException {
+        mstage = stage;
+
         // Initialize the game controller, map service and map renderer
         mapService = new MapService();
         mapRenderer = new MapRenderer(mapService);
-
         gameController = new GameController();
-        gameController.handleUserSetMap("piston_dam");
+
+        // Load map selection view
+        FXMLLoader mapSelectionLoader = new FXMLLoader(getClass().getResource("/assets/views/map-selection.fxml"));
+        Pane mapSelectionRoot = mapSelectionLoader.load();
+        Scene mapSelectionScene = new Scene(mapSelectionRoot);
+
+        stage.setTitle("Advance Wars - Map Selection");
+        stage.setScene(mapSelectionScene);
+        stage.show();
 
         characters = new ArrayList<>();
+    }
+
+    public static void startGame(String mapName) throws IOException {
+        gameController.handleUserSetMap(mapName);
 
         // Load the game view
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/assets/views/game-view.fxml"));
+        FXMLLoader loader = new FXMLLoader(AdvanceWars.class.getResource("/assets/views/game-view.fxml"));
         Pane root = loader.load();
         Scene scene = new Scene(root);
 
         // Set the stage properties
-        stage.setTitle("Advance Wars");
-        stage.setScene(scene);
-        stage.show();
+        mstage.setTitle("Advance Wars");
+        mstage.setScene(scene);
+        mstage.show();
     }
 
     /**
@@ -105,15 +119,6 @@ public class AdvanceWars extends Application {
      */
     public static List<ICharacter> getCharacters() {
         return characters;
-    }
-
-    /**
-     * Sets the list of characters.
-     *
-     * @param characters The list of characters to set.
-     */
-    public static void setCharacters(List<ICharacter> characters) {
-        AdvanceWars.characters = characters;
     }
 
     /**

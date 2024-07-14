@@ -3,6 +3,7 @@ package de.dhbw.advancewars.graphics;
 import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.event.IGameController;
 import de.dhbw.advancewars.maps.data.MapTile;
+import de.dhbw.advancewars.player.PlayerSide;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.layout.Pane;
 
@@ -39,5 +40,5 @@ public interface IMapRenderer {
 
     void despawnCharacter(ICharacter character);
 
-    //void renderGameInfoPopup(IGameController controller);
+    void updateStatusBar(IGameController controller);
 }

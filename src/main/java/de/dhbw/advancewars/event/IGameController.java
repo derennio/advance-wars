@@ -3,6 +3,7 @@ package de.dhbw.advancewars.event;
 import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.maps.data.MapTile;
 import de.dhbw.advancewars.player.PlayerSide;
+import javafx.scene.input.KeyCode;
 
 /**
  * A controller for events surrounding and regarding a game/match.
@@ -71,7 +72,30 @@ public interface IGameController {
      */
     PlayerSide getCurrentTurn();
 
+    /**
+     * Handle the user hovering a character.
+     */
     void handleHover(ICharacter character);
 
+    /**
+     * Handle the user ending the hover over a character.
+     */
     void handleEndHover();
+
+    /**
+     * @return Whether the character moves limit has been reached.
+     */
+    boolean characterMovesLimitReached(ICharacter character);
+
+    /**
+     * @return Whether the character attack limit has been reached.
+     */
+    boolean characterAttackLimitReached(ICharacter character);
+
+    /**
+     * Handle the user pressing a key.
+     *
+     * @param key The key that was pressed.
+     */
+    void handleKeyPress(KeyCode key);
 }
