@@ -255,7 +255,18 @@ public class MapRenderer implements IMapRenderer {
             }
         }
 
-        contextMenu.getItems().addAll(uniteItem, endTurnItem);
+        for(ICharacter c : AdvanceWars.getCharacters()) {
+            if (controller.calculateDistance(character.getPosition(), c.getPosition()) <= character.getMovementRange()) {
+                if (character.getPlayerSide() == c.getPlayerSide()) {
+                    if (CharacterClass.getClass(c) == CharacterClass.getClass(character) && c != character) {
+                        contextMenu.getItems().add(uniteItem);
+                        break;
+                    }
+                }
+            }
+        }
+
+        contextMenu.getItems().addAll(endTurnItem);
 
         contextMenu.setStyle(
                 "-fx-background-color: #ffffff; " +

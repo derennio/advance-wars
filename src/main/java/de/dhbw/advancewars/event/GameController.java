@@ -1,6 +1,7 @@
 package de.dhbw.advancewars.event;
 
 import de.dhbw.advancewars.AdvanceWars;
+import de.dhbw.advancewars.character.CharacterClass;
 import de.dhbw.advancewars.character.CharacterType;
 import de.dhbw.advancewars.character.ICharacter;
 import de.dhbw.advancewars.graphics.MapPane;
@@ -130,11 +131,15 @@ public class GameController implements IGameController {
                 return;
             }
 
-            if (selectedCharacter.getType() != character.getType()) {
+            if (CharacterClass.getClass(selectedCharacter) != CharacterClass.getClass(character)) {
                 return;
             }
 
             if (selectedCharacter.getPosition() == character.getPosition()) {
+                return;
+            }
+
+            if (calculateDistance(selectedCharacter.getPosition(), character.getPosition()) > selectedCharacter.getMovementRange()) {
                 return;
             }
 
