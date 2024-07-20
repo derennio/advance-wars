@@ -56,7 +56,7 @@ public class GameController implements IGameController {
         System.out.println("Clicked on tile " + tile);
         if (this.characterState == CharacterState.MOVING) {
             ICharacter selectedCharacter = getSelectedCharacter();
-            
+
             if (selectedCharacter == null) {
                 return;
             }
@@ -284,6 +284,7 @@ public class GameController implements IGameController {
         if (key == KeyCode.ESCAPE) {
             this.characterState = CharacterState.IDLE;
             AdvanceWars.getMapRenderer().removeInfoPanel();
+            AdvanceWars.getMapRenderer().clearOverlay();
         }
     }
 

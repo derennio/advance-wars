@@ -178,11 +178,9 @@ public class MapRenderer implements IMapRenderer {
             overlay.setPrefSize(TILE_SIZE, TILE_SIZE);
             overlay.relocate(tile.x() * TILE_SIZE, tile.y() * TILE_SIZE);
             mapPane.setOnKeyPressed(event -> {
-                clearOverlay();
                 controller.handleKeyPress(event.getCode());
             });
             overlay.setOnKeyPressed(event -> {
-                clearOverlay();
                 controller.handleKeyPress(event.getCode());
             });
 
@@ -201,9 +199,16 @@ public class MapRenderer implements IMapRenderer {
     
                     overlay.setBackground(hoverEffect);
                 }
-                this.mapPane.getChildren().add(overlay);
+                else{
+                    overlay.setOnMouseClicked(event ->
+                        clearOverlay());
+                }
+            }else{
+                overlay.setOnMouseClicked(event ->
+                    clearOverlay());
             }
 
+            this.mapPane.getChildren().add(overlay);
         }
     }
 
