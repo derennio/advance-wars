@@ -56,7 +56,7 @@ public class GameController implements IGameController {
         System.out.println("Clicked on tile " + tile);
         if (this.characterState == CharacterState.MOVING) {
             ICharacter selectedCharacter = getSelectedCharacter();
-
+            
             if (selectedCharacter == null) {
                 return;
             }
@@ -166,6 +166,7 @@ public class GameController implements IGameController {
 
         if (interactionType == InteractionType.MOVE) {
             this.characterState = CharacterState.MOVING;
+            AdvanceWars.getMapRenderer().overlayTiles(this);
         }
 
         if (interactionType == InteractionType.UNITE) {

@@ -83,6 +83,7 @@ public class MapRenderer implements IMapRenderer {
                 ICharacter selectedCharacter = controller.getSelectedCharacter();
                 if (selectedCharacter != null) {
                     unFocusCharacter((Pane) mapPane.lookup("#c" + selectedCharacter.getId()));
+                    clearOverlay();
                 }
             }
             controller.handleKeyPress(event.getCode());
@@ -118,12 +119,12 @@ public class MapRenderer implements IMapRenderer {
                 // The tile click event is handled by the controller.
                 tile.setOnMouseClicked(event ->
                     controller.handleTileClick(finalMap.tiles()[finalX][finalY]));
-                tile.setOnMouseEntered(event -> {
+                /*tile.setOnMouseEntered(event -> {
                     overlayTiles(new MapTile[]{finalMap.tiles()[finalX][finalY]});
                 });
                 tile.setOnMouseExited(event -> {
                     clearOverlay(new MapTile[]{finalMap.tiles()[finalX][finalY]});
-                });
+                });*/
 
                 target.getChildren().add(tile);
             }
@@ -144,7 +145,7 @@ public class MapRenderer implements IMapRenderer {
         this.renderStatusBar(target, map.width(), map.height(), controller);
     }
 
-    @Override
+    /*@Override
     public void overlayTiles(MapTile[] tiles) {
         for (MapTile tile : tiles) {
             Pane overlay = new Pane();
@@ -157,7 +158,7 @@ public class MapRenderer implements IMapRenderer {
                 if (AdvanceWars.getGameController().canMoveCharacter(AdvanceWars.getGameController().getSelectedCharacter(), tile)) {
                     color = Color.rgb(0, 89, 79, 0.45);
                 } else {
-                    color = Color.rgb(255, 0, 0, 0.45);
+                    color = Color.rgb(255, 0, 0, 0.0);
                 }
             }
 
@@ -166,18 +167,66 @@ public class MapRenderer implements IMapRenderer {
             overlay.setBackground(hoverEffect);
             this.mapPane.getChildren().add(overlay);
         }
+    }*/
+
+    @Override
+    public void overlayTiles(IGameController controller) {
+        MapDTO map = AdvanceWars.getMap();
+        for (MapTile tile: map.getTiles()){
+            Pane overlay = new Pane();
+            overlay.setId(tile.x() + "ol" + tile.y());
+            overlay.setPrefSize(TILE_SIZE, TILE_SIZE);
+            overlay.relocate(tile.x() * TILE_SIZE, tile.y() * TILE_SIZE);
+            mapPane.setOnKeyPressed(event -> {
+                clearOverlay();
+                controller.handleKeyPress(event.getCode());
+            });
+            overlay.setOnKeyPressed(event -> {
+                clearOverlay();
+                controller.handleKeyPress(event.getCode());
+            });
+
+            boolean setOverlay = true;
+            if (AdvanceWars.getGameController().canMoveCharacter(AdvanceWars.getGameController().getSelectedCharacter(), tile)) {
+                for(ICharacter character: AdvanceWars.getCharacters()){
+                    if(character.getPosition() == tile){
+                        setOverlay = false;
+                    }
+                }  
+                if (setOverlay){
+                    overlay.setOnMouseClicked(event ->
+                        controller.handleTileClick(map.tiles()[tile.x()][tile.y()]));
+                    Color color = Color.rgb(0, 89, 109, 0.55);
+                    Background hoverEffect = new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY));
+    
+                    overlay.setBackground(hoverEffect);
+                }
+                this.mapPane.getChildren().add(overlay);
+            }
+
+        }
     }
 
     @Override
-    public void clearOverlay(MapTile[] tiles) {
-        for (MapTile tile : tiles) {
+    public void clearOverlay() {
+        MapDTO map = AdvanceWars.getMap();
+        for (MapTile tile: map.getTiles()){
             String bgId = tile.x() + "ol" + tile.y();
             this.mapPane.getChildren().removeIf(p -> p.getId() != null && p.getId().equals(bgId));
         }
     }
 
+    /*@Override
+    public void clearOverlay(MapTile[] tiles) {
+        for (MapTile tile : tiles) {
+            String bgId = tile.x() + "ol" + tile.y();
+            this.mapPane.getChildren().removeIf(p -> p.getId() != null && p.getId().equals(bgId));
+        }
+    }*/
+
     @Override
     public void renderCharacter(MapTile tile, ICharacter character, IGameController controller) {
+        clearOverlay();
         Pane oldPane = (Pane) mapPane.lookup("#c" + character.getId());
         if (oldPane != null) {
             mapPane.getChildren().remove(oldPane);

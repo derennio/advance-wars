@@ -26,9 +26,9 @@ public interface IMapRenderer {
      */
     void renderMap(String mapPath, Pane target, IGameController controller) throws IOException;
 
-    void overlayTiles(MapTile[] tiles);
+    void overlayTiles(IGameController controller);
 
-    void clearOverlay(MapTile[] tiles);
+    void clearOverlay();
 
     void renderCharacter(MapTile tile, ICharacter character, IGameController controller);
 
