@@ -177,12 +177,7 @@ public class MapRenderer implements IMapRenderer {
             overlay.setId(tile.x() + "ol" + tile.y());
             overlay.setPrefSize(TILE_SIZE, TILE_SIZE);
             overlay.relocate(tile.x() * TILE_SIZE, tile.y() * TILE_SIZE);
-            mapPane.setOnKeyPressed(event -> {
-                controller.handleKeyPress(event.getCode());
-            });
-            overlay.setOnKeyPressed(event -> {
-                controller.handleKeyPress(event.getCode());
-            });
+            overlay.setFocusTraversable(true);
 
             boolean setOverlay = true;
             if (AdvanceWars.getGameController().canMoveCharacter(AdvanceWars.getGameController().getSelectedCharacter(), tile)) {
@@ -199,17 +194,12 @@ public class MapRenderer implements IMapRenderer {
     
                     overlay.setBackground(hoverEffect);
                 }
-                else{
-                    overlay.setOnMouseClicked(event ->
-                        clearOverlay());
-                }
-            }else{
-                overlay.setOnMouseClicked(event ->
-                    clearOverlay());
             }
-
             this.mapPane.getChildren().add(overlay);
         }
+        mapPane.setOnKeyPressed(event -> {
+            controller.handleKeyPress(event.getCode());
+        });
     }
 
     @Override
