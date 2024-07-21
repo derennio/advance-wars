@@ -21,3 +21,4 @@
     * Klicke auf eine zweite eigene Einheit, um sie auszuwählen.
     * Dabei kann die Gesundheit der neuen Einheit nicht über 100% der Alten steigen.
 * Der Spielstatus wird stets in der unteren Statusbar angezeigt.
+* Durch die ESC-Taste kann die ausgewählte Aktion oder das Auswählen einer Einheit abgebrochen werden
